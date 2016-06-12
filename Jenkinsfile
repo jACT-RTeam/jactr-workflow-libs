@@ -2,6 +2,6 @@
 // the following command: "git clone https://github.com/jACT-RTeam/jactr-workflow-libs.git ."
 node("workflowLibs") {
 	dir(env.JENKINS_HOME) {
-		git pull
+		sh "git pull"
 	}
 }
