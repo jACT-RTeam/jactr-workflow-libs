@@ -1,10 +1,9 @@
 package org.jactr;
 
-
 /**
  * A configuration for a {@link Build}.
  */
-class Config {
+class Config implements Serializable {
 
 	private final String releaseMetaDataURL
 	private final String gitRepoURL
