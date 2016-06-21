@@ -18,7 +18,7 @@ def run(Config config) {
 		   git url: config.gitRepoURL
 		   
 		   stage name: 'Set versions', concurrency: 1
-		   def newVersionForMaven = getNextVersion()
+		   def newVersionForMaven = getNextVersion(config)
 		   def newVersionForEclipse = newVersionForMaven.replaceAll('-', '.')
 		   maven('''--file parent/pom.xml \
      				-DnewVersion='''+newVersionForMaven+''' \
@@ -87,7 +87,7 @@ def maven(String optionsAndGoals) {
  * ({@code <majorPart>.<minorPart>.<patchPart>-<qualifier>}) but not to the format used by Eclipse
  * ({@code <majorPart>.<minorPart>.<patchPart>.<qualifier>}).
  */
-def getNextVersion() {
+def getNextVersion(Config config) {
 	def tmpDir=pwd tmp: true
 
 	// Get last release version
