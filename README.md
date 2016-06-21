@@ -10,6 +10,9 @@ The workflow libs provide two classes `Config` and `Build` which can be used to 
 a standardized build for commonreality, jactr and jactr-eclipse in the following way (using
 the example of commonreality):
 
+	import org.jactr.Config
+	import org.jactr.Build
+	
 	def config = new Config('http://monochromata.de/maven/releases/org.commonreality/org/commonreality/core/maven-metadata.xml',
 						'https://github.com/monochromata/commonreality.git')
 	new Build().run(config)
