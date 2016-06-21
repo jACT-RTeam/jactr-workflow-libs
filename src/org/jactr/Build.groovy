@@ -20,14 +20,17 @@ def run(Config config) {
 			   git url: config.gitRepoURL
 			   
 			   stage name: 'Set versions', concurrency: 1
-			   config.newVersion = getNextVersion()
+			   def newVersionForMaven = getNextVersion()
+			   def newVersionForEclipse = newVersionForMaven.replaceAll('-', '.')
 			   maven('''--file parent/pom.xml \
-			   			-Dcommonreality.eclipse.version='''+config.newVersionForEclipse+''' \
+         				-DnewVersion='''+newVersionForMaven+''' \
+			   			-Dcommonreality.eclipse.version='''+newVersionForEclipse+''' \
 					    versions:set''')
 		       
 		       stage name: "Clean & verify", concurrency: 1
-		       maven('''-Dcommonreality.eclipse.version='''+config.newVersionForEclipse+''' \
-		       		  clean verify''')
+		       maven('''-DnewVersion='''+newVersionForMaven+''' \
+         				-Dcommonreality.eclipse.version='''+newVersionForEclipse+''' \
+		       		    clean verify''')
 		
 		       stage name:"Deploy", concurrency: 1
 		       // TODO: Deploy to Maven Central will require the maven central ssh fingerprint
@@ -36,7 +39,8 @@ def run(Config config) {
 		       		 && cat $PATH_TO_UPLOAD_SERVER_SSH_FINGERPRINT_FILE >> ~/.ssh/known_hosts'''
 		       // Retry is necessary because upload is unreliable
 		       retry(5) {
-		       		maven('''-Dcommonreality.eclipse.version='''+config.newVersionForEclipse+''' \
+		       		maven('''-DnewVersion='''+newVersionForMaven+''' \
+         					 -Dcommonreality.eclipse.version='''+newVersionForEclipse+''' \
 		       				 -DskipTests=true \
 		       				 -DskipITs=true \
 		       				 deploy''')
@@ -45,7 +49,8 @@ def run(Config config) {
 		       stage name:"Site deploy", concurrency: 1
 		       // Retry is necessary because upload is unreliable
 		       retry(5) {
-		       		maven('''-Dcommonreality.eclipse.version='''+config.newVersionForEclipse+''' \
+		       		maven('''-DnewVersion='''+newVersionForMaven+''' \
+         					 -Dcommonreality.eclipse.version='''+newVersionForEclipse+''' \
 		       				 -DskipTests=true \
 		       				 -DskipITs=true \
 		       				 site-deploy''')
@@ -62,7 +67,6 @@ def maven(String optionsAndGoals) {
    		 -Dgpg.secretKeyring=$PATH_TO_GPG_SECRET_KEYRING \
          --errors \
          --settings $PATH_TO_SETTINGS_XML \
-         -DnewVersion='''+config.newVersionForMaven+''' \
          '''+optionsAndGoals
 }
 

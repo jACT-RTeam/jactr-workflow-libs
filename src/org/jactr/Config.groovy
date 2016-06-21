@@ -7,7 +7,6 @@ class Config implements Serializable {
 
 	private final String releaseMetaDataURL
 	private final String gitRepoURL
-	private String newVersion
 	
 	/**
 	 * Creates a new build configuration.
@@ -37,30 +36,5 @@ class Config implements Serializable {
     public String getGitRepoURL() {
     	return this.gitRepoURL
     }
-  	
-  	/**
-  	 * Set the version number that will be produced if this build passes.
-  	 * @param newVersion the new version in Maven format ({@code <majorPart>.<minorPart>.<patchPart>-<qualifier>})
-  	 * @see Build#getNextVersion()
-  	 */
-  	public void setNewVersion(String newVersion) {
-  		this.newVersion = newVersion;
-  	}
-  	
-  	/**
-  	 * Return the version that will be produced if this build passes, using Maven formatting.
-  	 * @return the version number in Maven format ({@code <majorPart>.<minorPart>.<patchPart>-<qualifier>})
-  	 */
-  	public String getNewVersionForMaven() {
-  		return this.newVersion;
-  	}
-  	
-  	/**
-  	 * Return the version that will be produced if this build passes, using Eclipse formatting.
-  	 * @return the version number in Eclipse format ({@code <majorPart>.<minorPart>.<patchPart>.<qualifier>})
-  	 */
-  	public String getNewVersionForEclipse() {
-  		return getNewVersionForMaven().replaceAll('-', '.')
-  	}
   	
 }
