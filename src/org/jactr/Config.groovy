@@ -5,8 +5,16 @@ package org.jactr;
  */
 class Config implements Serializable {
 
-	private final String releaseMetaDataURL
-	private final String gitRepoURL
+	/**
+  	 * The URL referring to a maven-metadata.xml file of a Maven repository that each successful build
+  	 * using this configuration deploys to.
+	 */
+	public final String releaseMetaDataURL
+	
+	/**
+     * The URL referring to the Git repository that will be checked out to base the build on.
+     */
+	public final String gitRepoURL
 	
 	/**
 	 * Creates a new build configuration.
@@ -21,20 +29,5 @@ class Config implements Serializable {
           this.releaseMetaDataURL = releaseMetaDataURL
           this.gitRepoURL = gitRepoURL
   	}
-  	
-  	/**
-  	 * @return The URL referring to a maven-metadata.xml file of a Maven repository that each successful build
-  	 *		   using this configuration deploys to.
-  	 */
-  	public String getReleaseMetaDataURL() {
-  		return this.releaseMetaDataURL
-    }
-    
-    /**
-     * @return The URL referring to the Git repository that will be checked out to base the build on.
-     */
-    public String getGitRepoURL() {
-    	return this.gitRepoURL
-    }
   	
 }
