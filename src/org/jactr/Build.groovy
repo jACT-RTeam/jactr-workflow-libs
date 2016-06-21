@@ -14,49 +14,46 @@ def run(Config config) {
 	   					[$class: 'FileBinding', credentialsId: 'upload.server.ssh.signature.file', variable: 'PATH_TO_UPLOAD_SERVER_SSH_FINGERPRINT_FILE'],
 	   					[$class: 'StringBinding', credentialsId: 'upload.server.name', variable: 'UPLOAD_SERVER_NAME'],]) {
 	   					
-			withEnv(["PATH+MAVEN=${tool 'mvn'}/bin", 
-					 "PATH+JAVA=${tool 'jdk8'}/bin"]) {
-			   stage 'Checkout'
-			   git url: config.gitRepoURL
-			   
-			   stage name: 'Set versions', concurrency: 1
-			   def newVersionForMaven = getNextVersion()
-			   def newVersionForEclipse = newVersionForMaven.replaceAll('-', '.')
-			   maven('''--file parent/pom.xml \
-         				-DnewVersion='''+newVersionForMaven+''' \
-			   			-Dcommonreality.eclipse.version='''+newVersionForEclipse+''' \
-					    versions:set''')
-		       
-		       stage name: "Clean & verify", concurrency: 1
-		       maven('''-DnewVersion='''+newVersionForMaven+''' \
-         				-Dcommonreality.eclipse.version='''+newVersionForEclipse+''' \
-		       		    clean verify''')
-		
-		       stage name:"Deploy", concurrency: 1
-		       // TODO: Deploy to Maven Central will require the maven central ssh fingerprint
-		       sh '''touch ~/.ssh/known_hosts \
-		       		 && ssh-keygen -f ~/.ssh/known_hosts -R $UPLOAD_SERVER_NAME \
-		       		 && cat $PATH_TO_UPLOAD_SERVER_SSH_FINGERPRINT_FILE >> ~/.ssh/known_hosts'''
-		       // Retry is necessary because upload is unreliable
-		       retry(5) {
-		       		maven('''-DnewVersion='''+newVersionForMaven+''' \
-         					 -Dcommonreality.eclipse.version='''+newVersionForEclipse+''' \
-		       				 -DskipTests=true \
-		       				 -DskipITs=true \
-		       				 deploy''')
-		       }
-		             
-		       stage name:"Site deploy", concurrency: 1
-		       // Retry is necessary because upload is unreliable
-		       retry(5) {
-		       		maven('''-DnewVersion='''+newVersionForMaven+''' \
-         					 -Dcommonreality.eclipse.version='''+newVersionForEclipse+''' \
-		       				 -DskipTests=true \
-		       				 -DskipITs=true \
-		       				 site-deploy''')
-		     	}
-	         }
-	   }
+		   stage 'Checkout'
+		   git url: config.gitRepoURL
+		   
+		   stage name: 'Set versions', concurrency: 1
+		   def newVersionForMaven = getNextVersion()
+		   def newVersionForEclipse = newVersionForMaven.replaceAll('-', '.')
+		   maven('''--file parent/pom.xml \
+     				-DnewVersion='''+newVersionForMaven+''' \
+		   			-Dcommonreality.eclipse.version='''+newVersionForEclipse+''' \
+				    versions:set''')
+	       
+	       stage name: "Clean & verify", concurrency: 1
+	       maven('''-DnewVersion='''+newVersionForMaven+''' \
+     				-Dcommonreality.eclipse.version='''+newVersionForEclipse+''' \
+	       		    clean verify''')
+	
+	       stage name:"Deploy", concurrency: 1
+	       // TODO: Deploy to Maven Central will require the maven central ssh fingerprint
+	       sh '''touch ~/.ssh/known_hosts \
+	       		 && ssh-keygen -f ~/.ssh/known_hosts -R $UPLOAD_SERVER_NAME \
+	       		 && cat $PATH_TO_UPLOAD_SERVER_SSH_FINGERPRINT_FILE >> ~/.ssh/known_hosts'''
+	       // Retry is necessary because upload is unreliable
+	       retry(5) {
+	       		maven('''-DnewVersion='''+newVersionForMaven+''' \
+     					 -Dcommonreality.eclipse.version='''+newVersionForEclipse+''' \
+	       				 -DskipTests=true \
+	       				 -DskipITs=true \
+	       				 deploy''')
+	       }
+	             
+	       stage name:"Site deploy", concurrency: 1
+	       // Retry is necessary because upload is unreliable
+	       retry(5) {
+	       		maven('''-DnewVersion='''+newVersionForMaven+''' \
+     					 -Dcommonreality.eclipse.version='''+newVersionForEclipse+''' \
+	       				 -DskipTests=true \
+	       				 -DskipITs=true \
+	       				 site-deploy''')
+	     	}
+	    }
 	}
 }
 
