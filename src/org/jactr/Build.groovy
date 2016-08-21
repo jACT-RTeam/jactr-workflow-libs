@@ -15,7 +15,11 @@ def run(Config config) {
 	   					[$class: 'StringBinding', credentialsId: 'upload.server.name', variable: 'UPLOAD_SERVER_NAME'],]) {
 	   					
 		   stage 'Checkout'
-		   git url: config.gitRepoURL
+		   if(config.gitCredentialsId) {
+		   		git url: config.gitRepoURL, credentialsId: config.gitCredentialsId
+		   } else {
+		   		git url: config.gitRepoURL
+		   }
 		   
 		   stage name: 'Set versions', concurrency: 1
 		   def newVersionForMaven = getNextVersion(config)

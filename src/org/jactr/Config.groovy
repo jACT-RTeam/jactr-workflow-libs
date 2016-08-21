@@ -17,7 +17,13 @@ class Config implements Serializable {
 	public final String gitRepoURL
 	
 	/**
-	 * Creates a new build configuration.
+	 * The credentials required to access the Git repository. {@code null}, if the Git repository is public
+	 * and does not require credentials.
+	 */
+	public final String gitCredentialsId
+	
+	/**
+	 * Creates a new build configuration for a public Git repository.
 	 * @param releaseMetaDataURL A URL referring to a maven-metadata.xml file of a Maven repository
 	 *							 that each successful build using this configuration deploys to. The meta-data
 	 *							 will be used to obtain the last version number in order to increment it when
@@ -26,8 +32,24 @@ class Config implements Serializable {
 	 */
 	public Config(String releaseMetaDataURL,
 	              String gitRepoURL) {
-          this.releaseMetaDataURL = releaseMetaDataURL
-          this.gitRepoURL = gitRepoURL
+	      this(releaseMetaDataURL, gitRepoURL, null)
+  	}
+  	
+	/**
+	 * Creates a new build configuration for a private Git repository that requires authentication.
+	 * @param releaseMetaDataURL A URL referring to a maven-metadata.xml file of a Maven repository
+	 *							 that each successful build using this configuration deploys to. The meta-data
+	 *							 will be used to obtain the last version number in order to increment it when
+	 *							 starting a new build (see {@link Build#getNextVersion()}).
+	 * @param gitRepoURL A URL referring to the Git repository that will be checked out to base the build on.
+	 * @param gitCredentialsId The ID of the Jenkins-managed credentials required to access the repository. 
+	 */
+	public Config(String releaseMetaDataURL,
+	              String gitRepoURL,
+	              String gitCredentialsId) {
+	      this.releaseMetaDataURL = releaseMetaDataURL
+	      this.gitRepoURL = gitRepoURL
+	      this.gitCredentialsId = gitCredentialsId
   	}
   	
 }
