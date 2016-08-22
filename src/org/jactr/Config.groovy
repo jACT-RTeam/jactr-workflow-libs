@@ -28,6 +28,12 @@ class Config implements Serializable {
 	public final String gitCredentialsId
 	
 	/**
+	 * True, if this build uses <a href="https://eclipse.org/tycho/sitedocs/tycho-release/">Tycho</a> to build
+	 * e.g. Eclipse plug-ins.
+	 */
+	public final boolean isTychoBuild
+	
+	/**
 	 * Creates a new build configuration for a public Git repository.
 	 * @param releaseMetaDataURL A URL referring to a maven-metadata.xml file of a Maven repository
 	 *							 that each successful build using this configuration deploys to. The meta-data
@@ -39,7 +45,7 @@ class Config implements Serializable {
 	public Config(String releaseMetaDataURL,
 	              String propertyForEclipseVersion,
 	              String gitRepoURL) {
-	      this(releaseMetaDataURL, propertyForEclipseVersion, gitRepoURL, null)
+	      this(releaseMetaDataURL, propertyForEclipseVersion, gitRepoURL, null, false)
   	}
   	
 	/**
@@ -56,10 +62,31 @@ class Config implements Serializable {
 	              String propertyForEclipseVersion,
 	              String gitRepoURL,
 	              String gitCredentialsId) {
+	      this(releaseMetaDataURL, propertyForEclipseVersion, gitRepoURL, gitCredentialsId)
+  	}
+  	
+	/**
+	 * Creates a new build configuration for a private Git repository that requires authentication.
+	 * @param releaseMetaDataURL A URL referring to a maven-metadata.xml file of a Maven repository
+	 *							 that each successful build using this configuration deploys to. The meta-data
+	 *							 will be used to obtain the last version number in order to increment it when
+	 *							 starting a new build (see {@link Build#getNextVersion()}).
+	 * @param propertyForEclipseVersion The Maven property that will be set with the next version in Eclipse format.
+	 * @param gitRepoURL A URL referring to the Git repository that will be checked out to base the build on.
+	 * @param gitCredentialsId The ID of the Jenkins-managed credentials required to access the repository.
+	 * @param isTychoBuild True, if this build uses <a href="https://eclipse.org/tycho/sitedocs/tycho-release/">Tycho</a>,
+	 *			e.g. to build Eclipse plug-ins. 
+	 */
+	public Config(String releaseMetaDataURL,
+	              String propertyForEclipseVersion,
+	              String gitRepoURL,
+	              String gitCredentialsId,
+	              boolean isTychoBuild) {
 	      this.releaseMetaDataURL = releaseMetaDataURL
 	      this.propertyForEclipseVersion = propertyForEclipseVersion
 	      this.gitRepoURL = gitRepoURL
 	      this.gitCredentialsId = gitCredentialsId
+	      this.isTychoBuild = isTychoBuild
   	}
   	
 }
