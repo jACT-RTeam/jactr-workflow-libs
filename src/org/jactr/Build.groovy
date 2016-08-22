@@ -26,12 +26,12 @@ def run(Config config) {
 		   def newVersionForEclipse = newVersionForMaven.replaceAll('-', '.')
 		   maven('''--file parent/pom.xml \
      				-DnewVersion='''+newVersionForMaven+''' \
-		   			-Dcommonreality.eclipse.version='''+newVersionForEclipse+''' \
+		   			-D'''+config.propertyForEclipseVersion+'''='''+newVersionForEclipse+''' \
 				    versions:set''')
 	       
 	       stage name: "Clean & verify", concurrency: 1
 	       maven('''-DnewVersion='''+newVersionForMaven+''' \
-     				-Dcommonreality.eclipse.version='''+newVersionForEclipse+''' \
+     				-D'''+config.propertyForEclipseVersion+'''='''+newVersionForEclipse+''' \
 	       		    clean verify''')
 	
 	       stage name:"Deploy", concurrency: 1
@@ -42,7 +42,7 @@ def run(Config config) {
 	       // Retry is necessary because upload is unreliable
 	       retry(5) {
 	       		maven('''-DnewVersion='''+newVersionForMaven+''' \
-     					 -Dcommonreality.eclipse.version='''+newVersionForEclipse+''' \
+     					 -D'''+config.propertyForEclipseVersion+'''='''+newVersionForEclipse+''' \
 	       				 -DskipTests=true \
 	       				 -DskipITs=true \
 	       				 deploy''')
@@ -52,7 +52,7 @@ def run(Config config) {
 	       // Retry is necessary because upload is unreliable
 	       retry(5) {
 	       		maven('''-DnewVersion='''+newVersionForMaven+''' \
-     					 -Dcommonreality.eclipse.version='''+newVersionForEclipse+''' \
+     					 -D'''+config.propertyForEclipseVersion+'''='''+newVersionForEclipse+''' \
 	       				 -DskipTests=true \
 	       				 -DskipITs=true \
 	       				 site-deploy''')

@@ -12,6 +12,11 @@ class Config implements Serializable {
 	public final String releaseMetaDataURL
 	
 	/**
+	 * The Maven property that will be set with the next version in Eclipse format.
+	 */
+	public final String propertyForEclipseVersion
+	
+	/**
      * The URL referring to the Git repository that will be checked out to base the build on.
      */
 	public final String gitRepoURL
@@ -28,11 +33,13 @@ class Config implements Serializable {
 	 *							 that each successful build using this configuration deploys to. The meta-data
 	 *							 will be used to obtain the last version number in order to increment it when
 	 *							 starting a new build (see {@link Build#getNextVersion()}).
+	 * @param propertyForEclipseVersion The Maven property that will be set with the next version in Eclipse format.
 	 * @param gitRepoURL A URL referring to the Git repository that will be checked out to base the build on.
 	 */
 	public Config(String releaseMetaDataURL,
+	              String propertyForEclipseVersion,
 	              String gitRepoURL) {
-	      this(releaseMetaDataURL, gitRepoURL, null)
+	      this(releaseMetaDataURL, propertyForEclipseVersion, gitRepoURL, null)
   	}
   	
 	/**
@@ -41,13 +48,16 @@ class Config implements Serializable {
 	 *							 that each successful build using this configuration deploys to. The meta-data
 	 *							 will be used to obtain the last version number in order to increment it when
 	 *							 starting a new build (see {@link Build#getNextVersion()}).
+	 * @param propertyForEclipseVersion The Maven property that will be set with the next version in Eclipse format.
 	 * @param gitRepoURL A URL referring to the Git repository that will be checked out to base the build on.
 	 * @param gitCredentialsId The ID of the Jenkins-managed credentials required to access the repository. 
 	 */
 	public Config(String releaseMetaDataURL,
+	              String propertyForEclipseVersion,
 	              String gitRepoURL,
 	              String gitCredentialsId) {
 	      this.releaseMetaDataURL = releaseMetaDataURL
+	      this.propertyForEclipseVersion = propertyForEclipseVersion
 	      this.gitRepoURL = gitRepoURL
 	      this.gitCredentialsId = gitCredentialsId
   	}
