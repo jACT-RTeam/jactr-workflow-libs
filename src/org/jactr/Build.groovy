@@ -30,7 +30,8 @@ def run(Config config) {
 				    versions:set''')
 		   if(config.isTychoBuild) {
 			   maven('''-DnewVersion='''+newVersionForEclipse+''' \
-					    tycho-versions:set-version''')
+			   			-Dtycho.mode=maven \
+					    org.eclipse.tycho:tycho-versions-plugin:0.26.0:set-version''')
 		   }
 	       
 	       stage name: "Clean & verify", concurrency: 1
