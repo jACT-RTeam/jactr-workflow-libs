@@ -24,14 +24,15 @@ def run(Config config) {
 		   stage name: 'Set versions', concurrency: 1
 		   def newVersionForMaven = getNextVersion(config)
 		   def newVersionForEclipse = newVersionForMaven.replaceAll('-', '.')
-		   maven('''--file parent/pom.xml \
-     				-DnewVersion='''+newVersionForMaven+''' \
-		   			-D'''+config.propertyForEclipseVersion+'''='''+newVersionForEclipse+''' \
-				    versions:set''')
 		   if(config.isTychoBuild) {
 			   maven('''-DnewVersion='''+newVersionForEclipse+''' \
 			   			-Dtycho.mode=maven \
 					    org.eclipse.tycho:tycho-versions-plugin:0.26.0:set-version''')
+		   } else {
+			   maven('''--file parent/pom.xml \
+	     				-DnewVersion='''+newVersionForMaven+''' \
+			   			-D'''+config.propertyForEclipseVersion+'''='''+newVersionForEclipse+''' \
+					    versions:set''')
 		   }
 	       
 	       stage name: "Clean & verify", concurrency: 1

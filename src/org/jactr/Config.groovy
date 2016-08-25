@@ -74,8 +74,10 @@ class Config implements Serializable {
 	 * @param propertyForEclipseVersion The Maven property that will be set with the next version in Eclipse format.
 	 * @param gitRepoURL A URL referring to the Git repository that will be checked out to base the build on.
 	 * @param gitCredentialsId The ID of the Jenkins-managed credentials required to access the repository.
-	 * @param isTychoBuild True, if this build uses <a href="https://eclipse.org/tycho/sitedocs/tycho-release/">Tycho</a>,
-	 *			e.g. to build Eclipse plug-ins. 
+	 * @param isTychoBuild {@code true}, if this build uses <a href="https://eclipse.org/tycho/sitedocs/tycho-release/">Tycho</a>,
+	 *			e.g. to build Eclipse plug-ins. If {@code true}, the aggregator POM needs to provide a list of
+	 *          artifactIds of those artifacts whose version numbers should be set - both in POM files and
+	 *			in Eclipse meta-data. See <a href="https://eclipse.org/tycho/sitedocs/tycho-release/tycho-versions-plugin/set-version-mojo.html">set-version mojo</a>.
 	 */
 	public Config(String releaseMetaDataURL,
 	              String propertyForEclipseVersion,
