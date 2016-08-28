@@ -62,7 +62,7 @@ class Config implements Serializable {
 	              String propertyForEclipseVersion,
 	              String gitRepoURL,
 	              String gitCredentialsId) {
-	      this(releaseMetaDataURL, propertyForEclipseVersion, gitRepoURL, gitCredentialsId)
+	      this(releaseMetaDataURL, propertyForEclipseVersion, gitRepoURL, gitCredentialsId, false)
   	}
   	
 	/**
