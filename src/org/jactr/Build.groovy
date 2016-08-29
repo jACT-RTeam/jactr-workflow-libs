@@ -5,7 +5,7 @@ package org.jactr;
 // https://github.com/jenkinsci/workflow-cps-global-lib-plugin/blob/master/README.md#writing-shared-code
 
 def run(Config config) {
-	node("1gb") {
+	node("2gb") {
 	   installToolsIfNecessary()
 	   withCredentials([[$class: 'FileBinding', credentialsId: 'settings.xml', variable: 'PATH_TO_SETTINGS_XML'],
 	   					[$class: 'FileBinding', credentialsId: 'jarsigner.keystore', variable: 'PATH_TO_JARSIGNER_KEYSTORE'],
