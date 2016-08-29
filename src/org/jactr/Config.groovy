@@ -34,6 +34,13 @@ class Config implements Serializable {
 	public final boolean isTychoBuild
 	
 	/**
+	 * If set, a <a href="http://linux.die.net/man/1/xvfb">Xvfb</a> and a
+	 * <a href="http://www.nongnu.org/ratpoison/">ratpoison window manager</a> shall be created for the display
+	 * {@code :<displayNumber>}.
+	 */
+	public final int displayNumber
+	
+	/**
 	 * Creates a new build configuration for a public Git repository.
 	 * @param releaseMetaDataURL A URL referring to a maven-metadata.xml file of a Maven repository
 	 *							 that each successful build using this configuration deploys to. The meta-data
@@ -83,12 +90,14 @@ class Config implements Serializable {
 	              String propertyForEclipseVersion,
 	              String gitRepoURL,
 	              String gitCredentialsId,
-	              boolean isTychoBuild) {
+	              boolean isTychoBuild,
+	              boolean displayNumber) {
 	      this.releaseMetaDataURL = releaseMetaDataURL
 	      this.propertyForEclipseVersion = propertyForEclipseVersion
 	      this.gitRepoURL = gitRepoURL
 	      this.gitCredentialsId = gitCredentialsId
 	      this.isTychoBuild = isTychoBuild
+	      this.displayNumber = displayNumber;
   	}
   	
 }

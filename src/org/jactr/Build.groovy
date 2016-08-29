@@ -36,6 +36,11 @@ def run(Config config) {
 		   }
 	       
 	       stage name: "Clean & verify", concurrency: 1
+	       if(config.displayNumber) {
+	       		sh '''Xvfb :'''+config.displayNumber+''' -screen 0 1920x1080x16 -nolisten tcp -fbdir /var/run &
+	       		      while [ ! -f /tmp/.X'''+config.displayNumber+'''-lock ]; do echo "Waiting for display :'''+config.displayNumber+'''"; sleep 1; done
+	       			  ratpoison --display :'''+config.displayNumber+''' &'''
+	       }
 	       maven('''-DnewVersion='''+newVersionForMaven+''' \
      				-D'''+config.propertyForEclipseVersion+'''='''+newVersionForEclipse+''' \
 	       		    clean verify''')
@@ -152,6 +157,11 @@ def installToolsIfNecessary() {
 	        && apt-get remove --yes openjdk-7-jdk \
 	        && apt-get install --yes openjdk-8-jre-headless openjdk-8-jdk \
 	        && /usr/sbin/update-java-alternatives -s java-1.8.0-openjdk-amd64 \
-	        && apt-get install --yes curl git maven libxml-xpath-perl'''
+	        && apt-get install --yes curl git maven libxml-xpath-perl \
+	        && apt-get install --yes xvfb ratpoison \
+		    && mkdir --parents /tmp/.X11-unix \
+		    && chmod 1777 /tmp/.X11-unix \
+		    && Xvfb -help \
+		    && ratpoison --version'''
     }
 }
