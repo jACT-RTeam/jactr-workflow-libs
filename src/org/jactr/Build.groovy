@@ -36,14 +36,25 @@ def run(Config config) {
 		   }
 	       
 	       stage name: "Clean & verify", concurrency: 1
+	       def tmpDir=pwd tmp: true
 	       if(config.displayNumber) {
 	       		sh '''Xvfb :'''+config.displayNumber+''' -screen 0 1920x1080x16 -nolisten tcp -fbdir /var/run &
+	       			  echo $! > '''+tmpDir+'''/xvfb.pid;
 	       		      while [ ! -f /tmp/.X'''+config.displayNumber+'''-lock ]; do echo "Waiting for display :'''+config.displayNumber+'''"; sleep 1; done
-	       			  ratpoison --display :'''+config.displayNumber+''' &'''
+	       			  ratpoison --display :'''+config.displayNumber+''' &
+	       			  echo $! > '''+tmpDir+'''/ratpoison.pid;
+	       			  export DISPLAY=:'''+config.displayNumber
 	       }
-	       maven('''-DnewVersion='''+newVersionForMaven+''' \
-     				-D'''+config.propertyForEclipseVersion+'''='''+newVersionForEclipse+''' \
-	       		    clean verify''')
+	       try {
+		       maven('''-DnewVersion='''+newVersionForMaven+''' \
+	     				-D'''+config.propertyForEclipseVersion+'''='''+newVersionForEclipse+''' \
+		       		    clean verify''')
+   		   } finally {
+   		   	   sh '''kill $(cat '''+tmpDir+'''/xvfb.pid);
+   		   	   		 rm '''+tmpDir+'''/xvfb.pid;
+   		   	         kill $(cat '''+tmpDir+'''/ratpoison.pid);
+   		   	         rm '''+tmpDir+'''/ratpoison.pid'''
+   		   }
 	
 	       stage name:"Deploy", concurrency: 1
 	       // TODO: Deploy to Maven Central will require the maven central ssh fingerprint
