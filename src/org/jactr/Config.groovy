@@ -91,7 +91,7 @@ class Config implements Serializable {
 	              String gitRepoURL,
 	              String gitCredentialsId,
 	              boolean isTychoBuild,
-	              boolean displayNumber) {
+	              int displayNumber) {
 	      this.releaseMetaDataURL = releaseMetaDataURL
 	      this.propertyForEclipseVersion = propertyForEclipseVersion
 	      this.gitRepoURL = gitRepoURL
