@@ -42,11 +42,11 @@ def run(Config config) {
 	       			  echo $! > '''+tmpDir+'''/xvfb.pid;
 	       		      while [ ! -f /tmp/.X'''+config.displayNumber+'''-lock ]; do echo "Waiting for display :'''+config.displayNumber+'''"; sleep 1; done
 	       			  ratpoison --display :'''+config.displayNumber+''' &
-	       			  echo $! > '''+tmpDir+'''/ratpoison.pid;
-	       			  export DISPLAY=:'''+config.displayNumber
+	       			  echo $! > '''+tmpDir+'''/ratpoison.pid'''
 	       }
 	       try {
-		       maven('''-DnewVersion='''+newVersionForMaven+''' \
+		       maven(config.displayNumber,
+		       		 '''-DnewVersion='''+newVersionForMaven+''' \
 	     				-D'''+config.propertyForEclipseVersion+'''='''+newVersionForEclipse+''' \
 		       		    clean verify''')
    		   } finally {
@@ -81,6 +81,17 @@ def run(Config config) {
 	     	}
 	    }
 	}
+}
+
+def maven(int displayNumber, String optionsAndGoals) {
+   sh '''export DISPLAY=:'''+displayNumber+''' \
+	     && mvn \
+   		 -Djarsigner.keystore.path=$PATH_TO_JARSIGNER_KEYSTORE \
+   		 -Dgpg.publicKeyring=$PATH_TO_GPG_PUBLIC_KEYRING \
+   		 -Dgpg.secretKeyring=$PATH_TO_GPG_SECRET_KEYRING \
+         --errors \
+         --settings $PATH_TO_SETTINGS_XML \
+         '''+optionsAndGoals
 }
 
 def maven(String optionsAndGoals) {
