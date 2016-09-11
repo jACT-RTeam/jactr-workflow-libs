@@ -32,7 +32,7 @@ public class ConfigBuilder implements Serializable {
      * The label of the Jenkins node to be used to execute the job run
      * from the configuration created by the builder. Has a default value.
      */
-    private labelForJenkinsNode = "2gb";
+    private String labelForJenkinsNode = "2gb";
     
     /**
      * The Maven property that will be set with the next version in Eclipse format. Has a default value.
