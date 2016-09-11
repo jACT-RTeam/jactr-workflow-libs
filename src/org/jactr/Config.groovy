@@ -5,6 +5,12 @@ package org.jactr;
  */
 class Config implements Serializable {
 
+    /**
+     * The label of the Jenkins node to be used to execute the job run
+     * from this configuration.
+     */
+	public final String labelForJenkinsNode
+
 	/**
   	 * The URL referring to a maven-metadata.xml file of a Maven repository that each successful build
   	 * using this configuration deploys to.
@@ -40,6 +46,37 @@ class Config implements Serializable {
 	 */
 	public final int displayNumber
 	
+    /**
+     * If set, the jobs named in this list will be triggered if the configured job completes successfully.
+     * Triggering will include job parameters to have these jobs update their dependencies to cover the new
+     * version created by the configured job.
+     */
+	public List<String> jobsToUpdateToNewlyBuiltVersion
+	
+    /**
+     * The Maven groupId obtained from {@link #releaseMetaDataURL} before the configuration is build.
+     *
+     * @see #parseMavenMetadata()
+     * @see #build()
+     */
+	public final String mavenGroupId
+	
+    /**
+     * The Maven artifactId obtained from {@link #releaseMetaDataURL} before the configuration is build.
+     *
+     * @see #parseMavenMetadata()
+     * @see #build()
+     */
+	public final String mavenArtifactId
+	
+    /**
+     * The last released Maven version obtained from {@link #releaseMetaDataURL} before the configuration is build.
+     *
+     * @see #parseMavenMetadata()
+     * @see #build()
+     */
+	public final String mavenCurrentReleaseVersion
+	
 	/**
 	 * Creates a new build configuration for a public Git repository.
 	 * @param releaseMetaDataURL A URL referring to a maven-metadata.xml file of a Maven repository
@@ -48,7 +85,9 @@ class Config implements Serializable {
 	 *							 starting a new build (see {@link Build#getNextVersion()}).
 	 * @param propertyForEclipseVersion The Maven property that will be set with the next version in Eclipse format.
 	 * @param gitRepoURL A URL referring to the Git repository that will be checked out to base the build on.
+	 * @deprecated Use {@link ConfigBuilder} instead.
 	 */
+	 @Deprecated
 	public Config(String releaseMetaDataURL,
 	              String propertyForEclipseVersion,
 	              String gitRepoURL) {
@@ -64,7 +103,9 @@ class Config implements Serializable {
 	 * @param propertyForEclipseVersion The Maven property that will be set with the next version in Eclipse format.
 	 * @param gitRepoURL A URL referring to the Git repository that will be checked out to base the build on.
 	 * @param gitCredentialsId The ID of the Jenkins-managed credentials required to access the repository. 
+	 * @deprecated Use {@link ConfigBuilder} instead.
 	 */
+	 @Deprecated
 	public Config(String releaseMetaDataURL,
 	              String propertyForEclipseVersion,
 	              String gitRepoURL,
@@ -85,19 +126,44 @@ class Config implements Serializable {
 	 *			e.g. to build Eclipse plug-ins. If {@code true}, the aggregator POM needs to provide a list of
 	 *          artifactIds of those artifacts whose version numbers should be set - both in POM files and
 	 *			in Eclipse meta-data. See <a href="https://eclipse.org/tycho/sitedocs/tycho-release/tycho-versions-plugin/set-version-mojo.html">set-version mojo</a>.
+	 * @deprecated Use {@link ConfigBuilder} instead.
 	 */
+	 @Deprecated
 	public Config(String releaseMetaDataURL,
 	              String propertyForEclipseVersion,
 	              String gitRepoURL,
 	              String gitCredentialsId,
 	              boolean isTychoBuild,
 	              int displayNumber) {
-	      this.releaseMetaDataURL = releaseMetaDataURL
-	      this.propertyForEclipseVersion = propertyForEclipseVersion
-	      this.gitRepoURL = gitRepoURL
-	      this.gitCredentialsId = gitCredentialsId
-	      this.isTychoBuild = isTychoBuild
-	      this.displayNumber = displayNumber;
+		this(releaseMetaDataURL, propertyForEclipseVersion, gitRepoURL, gitCredentialsId,
+		     isTychoBuild, displayNumber, "2gb")
+  	}
+  	
+  	/**
+  	 * This constructor shall only be used by {@link ConfigBuilder}.
+  	 */
+  	Config(String releaseMetaDataURL,
+           String propertyForEclipseVersion,
+           String gitRepoURL,
+           String gitCredentialsId,
+           boolean isTychoBuild,
+           Integer displayNumber,
+           String labelForJenkinsNode,
+           String jobsToUpdateToNewlyBuiltVersion,
+           String mavenGroupId,
+           String mavenArtifactId,
+           String mavenCurrentReleaseVersion) {  	
+		this.releaseMetaDataURL = releaseMetaDataURL
+		this.propertyForEclipseVersion = propertyForEclipseVersion
+		this.gitRepoURL = gitRepoURL
+		this.gitCredentialsId = gitCredentialsId
+		this.isTychoBuild = isTychoBuild
+		this.displayNumber = displayNumber
+		this.labelForJenkinsNode = labelForJenkinsNode
+		this.jobsToUpdateToNewlyBuiltVersion = jobsToUpdateToNewlyBuiltVersion
+		this.mavenGroupId = mavenGroupId
+		this.mavenArtifactId = mavenArtifactId
+		this.mavenCurrentReleaseVersion = mavenCurrentReleaseVersion
   	}
   	
 }

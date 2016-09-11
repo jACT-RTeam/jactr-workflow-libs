@@ -5,7 +5,7 @@ package org.jactr;
 // https://github.com/jenkinsci/workflow-cps-global-lib-plugin/blob/master/README.md#writing-shared-code
 
 def run(Config config) {
-	node("2gb") {
+	node(config.labelForJenkinsNode) {
 	   installToolsIfNecessary()
 	   withCredentials([[$class: 'FileBinding', credentialsId: 'settings.xml', variable: 'PATH_TO_SETTINGS_XML'],
 	   					[$class: 'FileBinding', credentialsId: 'jarsigner.keystore', variable: 'PATH_TO_JARSIGNER_KEYSTORE'],
@@ -127,15 +127,6 @@ def maven(String optionsAndGoals) {
 def getNextVersion(Config config) {
 	def tmpDir=pwd tmp: true
 
-	// Get last release version
-	def mavenMetaDataFile = tmpDir+'/maven-metadata.xml'
-	def versionFile = tmpDir+'/maven.release'
-	sh 'curl --silent '+config.releaseMetaDataURL+' > '+mavenMetaDataFile
-	sh 'xpath -e metadata/versioning/release -q '+mavenMetaDataFile+' | sed --regexp-extended "s/<\\/?release>//g" > '+versionFile
-	def oldVersion = readFile(versionFile).trim()
-	sh 'rm '+mavenMetaDataFile
-	sh 'rm '+versionFile
-
     // Determine last commit message
     def commitFile=tmpDir+'/last-commit-message.txt'
     sh 'git log --max-count=1 > '+commitFile
@@ -149,8 +140,8 @@ def getNextVersion(Config config) {
     sh 'rm '+commitHashFile
 	
 	// Create new version number
-	def newVersion = oldVersion
-	def oldVersionWithoutQualifier = oldVersion.split("-")[0]
+	def newVersion = config.mavenCurrentReleaseVersion
+	def oldVersionWithoutQualifier = config.mavenCurrentReleaseVersion.split("-")[0]
 	String[] parts = oldVersionWithoutQualifier.split("\\.")
 	if(lastCommitMessage.contains("+majorVersion")) {
 		newVersion = (parts[0].toInteger()+1)+".0.0"
@@ -166,7 +157,7 @@ def getNextVersion(Config config) {
 	//     Eclipse versions have the format /<major>.<minor>.<patch>.<qualifier>/ ,
 	// thus - needs to be replaced by . to create the latter out of the former.
 	newVersion += '-'+lastCommitHash
-	echo "Updating version $oldVersion -> $newVersion"
+	echo 'Updating version '+config.mavenMetaDataFile+' -> '+newVersion
 	currentBuild.displayName = '#'+currentBuild.number+' v'+newVersion
 	return newVersion
 }
