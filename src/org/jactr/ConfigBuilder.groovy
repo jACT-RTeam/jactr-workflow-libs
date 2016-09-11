@@ -92,7 +92,6 @@ public class ConfigBuilder {
 						 String gitRepoURL) {
 		this.releaseMetaDataURL = releaseMetaDataURL
 		this.gitRepoURL = gitRepoURL
-		parseMavenMetadata()
 	}
 	
 	/**
