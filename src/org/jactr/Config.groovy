@@ -149,7 +149,7 @@ class Config implements Serializable {
            boolean isTychoBuild,
            Integer displayNumber,
            String labelForJenkinsNode,
-           String jobsToUpdateToNewlyBuiltVersion,
+           List<String> jobsToUpdateToNewlyBuiltVersion,
            String mavenGroupId,
            String mavenArtifactId,
            String mavenCurrentReleaseVersion) {  	
