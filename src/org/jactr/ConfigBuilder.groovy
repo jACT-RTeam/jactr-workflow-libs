@@ -45,7 +45,7 @@ public class ConfigBuilder {
 	 * <a href="http://www.nongnu.org/ratpoison/">ratpoison window manager</a> shall be created for the display
 	 * {@code :<displayNumber>}. Defaults to {@code null}.
 	 */
-	private Integer displayNumber = null
+	private int displayNumber = null
 
     /**
      * If set, the jobs named in this list will be triggered if the configured job completes successfully.
