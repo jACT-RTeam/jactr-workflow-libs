@@ -45,14 +45,14 @@ public class ConfigBuilder {
 	 * <a href="http://www.nongnu.org/ratpoison/">ratpoison window manager</a> shall be created for the display
 	 * {@code :<displayNumber>}. Defaults to {@code null}.
 	 */
-	private Integer displayNumber 
+	private Integer displayNumber = null
 
     /**
      * If set, the jobs named in this list will be triggered if the configured job completes successfully.
      * Triggering will include job parameters to have these jobs update their dependencies to cover the new
      * version created by the configured job. Defaults to {@code null}.
      */
-	private List<String> jobsToUpdateToNewlyBuiltVersion
+	private List<String> jobsToUpdateToNewlyBuiltVersion = null
 
     /**
      * The Maven groupId obtained from {@link #releaseMetaDataURL} before the configuration is build.
@@ -60,7 +60,7 @@ public class ConfigBuilder {
      * @see #parseMavenMetadata()
      * @see #build()
      */
-	private String mavenGroupId
+	private String mavenGroupId = null
 	
     /**
      * The Maven artifactId obtained from {@link #releaseMetaDataURL} before the configuration is build.
@@ -68,7 +68,7 @@ public class ConfigBuilder {
      * @see #parseMavenMetadata()
      * @see #build()
      */
-	private String mavenArtifactId
+	private String mavenArtifactId = null
 	
     /**
      * The Maven last released version obtained from {@link #releaseMetaDataURL} before the configuration is build.
@@ -76,7 +76,7 @@ public class ConfigBuilder {
      * @see #parseMavenMetadata()
      * @see #build()
      */
-	private String mavenCurrentReleaseVersion
+	private String mavenCurrentReleaseVersion = null
 
     /**
      * Create a builder and supply the required configuration information to build
