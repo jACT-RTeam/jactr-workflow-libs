@@ -99,6 +99,7 @@ public class ConfigBuilder {
      */
     public ConfigBuilder useJenkinsNodeWithLabel(String label) {
         this.labelForJenkinsNode = label
+        return this
     }
 	
     /**
@@ -107,6 +108,7 @@ public class ConfigBuilder {
      */
     public ConfigBuilder gitCredentialsId(String credentialsId) {
         this.gitCredentialsId = credentialsId
+        return this
     }
 	
     /**
@@ -115,6 +117,7 @@ public class ConfigBuilder {
      */
     public ConfigBuilder propertyForEclipseVersion(String propertyName) {
         this.propertyForEclipseVersion = propertyName
+        return this
     }
 	
     /**
@@ -122,6 +125,7 @@ public class ConfigBuilder {
      */
     public ConfigBuilder isTychoBuild() {
         this.isTychoBuild = true
+        return this
     }
 	
     /**
@@ -131,6 +135,7 @@ public class ConfigBuilder {
      */
     public ConfigBuilder provideDisplayAndWindowManager(int displayNumber) {
         this.displayNumber = displayNumber
+        return this
     }
 
     /**
@@ -140,6 +145,7 @@ public class ConfigBuilder {
      */
     public ConfigBuilder updateDependentJobsToNewlyBuiltVersion(String... jobNames) {
         this.jobsToUpdateToNewlyBuiltVersion = java.util.Arrays.asList(jobNames)
+        return this
     }
 
     /**
