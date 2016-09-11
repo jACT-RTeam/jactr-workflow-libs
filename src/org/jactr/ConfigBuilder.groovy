@@ -161,7 +161,7 @@ public class ConfigBuilder implements Serializable {
      */
     public Config build() {
         parseMavenMetadata()
-        echo "obtained maven metadata"
+        script.echo("obtained maven metadata")
         def config = new Config(
             this.releaseMetaDataURL,
             this.propertyForEclipseVersion,
@@ -174,7 +174,7 @@ public class ConfigBuilder implements Serializable {
             this.mavenGroupId,
             this.mavenArtifactId,
             this.mavenCurrentReleaseVersion)
-        echo "config="+config
+        script.echo("config="+config)
         return config
     }
 	
