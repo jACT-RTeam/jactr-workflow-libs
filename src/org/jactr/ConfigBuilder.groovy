@@ -4,7 +4,7 @@ package org.jactr;
  * A builder for a {@link Config} that will be used in a Jenkins pipeline or multi-branch
  * pipeline job.
  */
-public class ConfigBuilder {
+public class ConfigBuilder implements Serializable {
 
     /**
      * The script in which the config builder is used.
