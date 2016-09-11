@@ -109,11 +109,11 @@ public class ConfigBuilder {
 		this.gitCredentialsId = credentialsId
 	}
 	
-	/**
+    /**
 	 * Sets the Maven property that will be set with the version (in Eclipse format) that will
 	 * be build by the configured job.
-	 *
-	public ConfigBuilder usePropertyForEclipseVersion(String propertyName) {
+	 */
+	public ConfigBuilder propertyForEclipseVersion(String propertyName) {
 		this.propertyForEclipseVersion = propertyName
 	}
 	
