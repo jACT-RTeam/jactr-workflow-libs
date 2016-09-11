@@ -5,6 +5,11 @@ package org.jactr;
  * pipeline job.
  */
 public class ConfigBuilder {
+
+    /**
+     * The script in which the config builder is used.
+     */
+    private final WorkflowScript script
 	
     /**
      * The URL referring to a maven-metadata.xml file of a Maven repository that each successful build
@@ -82,14 +87,17 @@ public class ConfigBuilder {
      * Create a builder and supply the required configuration information to build
      * from a public Git repository.
      * 
+     * @param script             The script in which the builder is used.
      * @param releaseMetaDataURL A URL referring to a maven-metadata.xml file of a Maven repository
      *                           that each successful build using the configured job deploys to. The meta-data
      *                           will be used to obtain the last version number in order to increment it when
      *                           starting a new build (see {@link Build#getNextVersion()}).
      * @param gitRepoURL A URL referring to the Git repository that will be checked out to base the build on.
      */
-    public ConfigBuilder(String releaseMetaDataURL,
+    public ConfigBuilder(WorkflowScript script,
+                         String releaseMetaDataURL,
     					 String gitRepoURL) {
+        this.script = script
         this.releaseMetaDataURL = releaseMetaDataURL
         this.gitRepoURL = gitRepoURL
     }
@@ -168,25 +176,25 @@ public class ConfigBuilder {
     }
 	
     private void parseMavenMetadata() {
-        node(this.labelForJenkinsNode) {
-            def tmpDir=pwd tmp: true
+        script.node(this.labelForJenkinsNode) {
+            def tmpDir=script.pwd tmp: true
             
             // Get the Maven meta-data: groupId, artifactId, release version
             def mavenMetaDataFile = tmpDir+'/maven-metadata.xml'
             def groupIdFile = tmpDir+'/maven.groupId'
             def artifactIdFile = tmpDir+'/maven.artifactId'
             def versionFile = tmpDir+'/maven.release'
-            sh 'curl --silent '+config.releaseMetaDataURL+' > '+mavenMetaDataFile
-            sh 'xpath -e metadata/groupId -q '+mavenMetaDataFile+' | sed --regexp-extended "s/<\\/?groupId>//g" > '+groupIdFile
-            sh 'xpath -e metadata/artifactId -q '+mavenMetaDataFile+' | sed --regexp-extended "s/<\\/?artifactId>//g" > '+artifactIdFile
-            sh 'xpath -e metadata/versioning/release -q '+mavenMetaDataFile+' | sed --regexp-extended "s/<\\/?release>//g" > '+versionFile
-            this.mavenGroupId = readFile(groupIdFile).trim()
-            this.mavenArtifactId = readFile(artifactIdFile).trim()
-            this.mavenCurrentReleaseVersion = readFile(versionFile).trim()
-            sh 'rm '+mavenMetaDataFile
-            sh 'rm '+groupIdFile
-            sh 'rm '+artifactIdFile
-            sh 'rm '+versionFile
+            script.sh 'curl --silent '+config.releaseMetaDataURL+' > '+mavenMetaDataFile
+            script.sh 'xpath -e metadata/groupId -q '+mavenMetaDataFile+' | sed --regexp-extended "s/<\\/?groupId>//g" > '+groupIdFile
+            script.sh 'xpath -e metadata/artifactId -q '+mavenMetaDataFile+' | sed --regexp-extended "s/<\\/?artifactId>//g" > '+artifactIdFile
+            script.sh 'xpath -e metadata/versioning/release -q '+mavenMetaDataFile+' | sed --regexp-extended "s/<\\/?release>//g" > '+versionFile
+            this.mavenGroupId = script.readFile(groupIdFile).trim()
+            this.mavenArtifactId = script.readFile(artifactIdFile).trim()
+            this.mavenCurrentReleaseVersion = script.readFile(versionFile).trim()
+            script.sh 'rm '+mavenMetaDataFile
+            script.sh 'rm '+groupIdFile
+            script.sh 'rm '+artifactIdFile
+            script.sh 'rm '+versionFile
         }
     }
 }
