@@ -142,7 +142,7 @@ class Config implements Serializable {
     /**
      * This constructor shall only be used by {@link ConfigBuilder}.
      */
-    Config(String releaseMetaDataURL,
+    public Config(String releaseMetaDataURL,
            String propertyForEclipseVersion,
            String gitRepoURL,
            String gitCredentialsId,
