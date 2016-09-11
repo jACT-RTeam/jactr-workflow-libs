@@ -113,7 +113,7 @@ public class ConfigBuilder {
 	 * Sets the Maven property that will be set with the version (in Eclipse format) that will
 	 * be build by the configured job.
 	 *
-	public ConfigBuilder propertyForEclipseVersion(String propertyName) {
+	public ConfigBuilder usePropertyForEclipseVersion(String propertyName) {
 		this.propertyForEclipseVersion = propertyName
 	}
 	
