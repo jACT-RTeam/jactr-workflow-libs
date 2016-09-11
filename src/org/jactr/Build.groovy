@@ -6,7 +6,6 @@ package org.jactr;
 
 def run(Config config) {
 	node(config.labelForJenkinsNode) {
-	   installToolsIfNecessary()
 	   withCredentials([[$class: 'FileBinding', credentialsId: 'settings.xml', variable: 'PATH_TO_SETTINGS_XML'],
 	   					[$class: 'FileBinding', credentialsId: 'jarsigner.keystore', variable: 'PATH_TO_JARSIGNER_KEYSTORE'],
 	   					[$class: 'FileBinding', credentialsId: 'pubring.gpg', variable: 'PATH_TO_GPG_PUBLIC_KEYRING'],
@@ -160,21 +159,4 @@ def getNextVersion(Config config) {
 	echo 'Updating version '+config.mavenMetaDataFile+' -> '+newVersion
 	currentBuild.displayName = '#'+currentBuild.number+' v'+newVersion
 	return newVersion
-}
-
-def installToolsIfNecessary() {
-    // Retry is necessary because downloads via apt-get are unreliable
-   	retry(3) {
-	   sh '''echo "deb http://http.debian.net/debian jessie-backports main" > /etc/apt/sources.list.d/jessie-backports.list \
-	        && apt-get update \
-	        && apt-get remove --yes openjdk-7-jdk \
-	        && apt-get install --yes openjdk-8-jre-headless openjdk-8-jdk \
-	        && /usr/sbin/update-java-alternatives -s java-1.8.0-openjdk-amd64 \
-	        && apt-get install --yes curl git maven libxml-xpath-perl \
-	        && apt-get install --yes xvfb ratpoison \
-		    && mkdir --parents /tmp/.X11-unix \
-		    && chmod 1777 /tmp/.X11-unix \
-		    && Xvfb -help \
-		    && ratpoison --version'''
-    }
 }
