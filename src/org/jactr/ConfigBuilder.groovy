@@ -9,7 +9,7 @@ public class ConfigBuilder {
     /**
      * The script in which the config builder is used.
      */
-    private final WorkflowScript script
+    private final script
 	
     /**
      * The URL referring to a maven-metadata.xml file of a Maven repository that each successful build
@@ -94,7 +94,7 @@ public class ConfigBuilder {
      *                           starting a new build (see {@link Build#getNextVersion()}).
      * @param gitRepoURL A URL referring to the Git repository that will be checked out to base the build on.
      */
-    public ConfigBuilder(WorkflowScript script,
+    public ConfigBuilder(script,
                          String releaseMetaDataURL,
     					 String gitRepoURL) {
         this.script = script
