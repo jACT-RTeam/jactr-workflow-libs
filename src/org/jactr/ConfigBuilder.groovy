@@ -38,14 +38,14 @@ public class ConfigBuilder {
 	 * True, if the configured build uses <a href="https://eclipse.org/tycho/sitedocs/tycho-release/">Tycho</a> to build
 	 * e.g. Eclipse plug-ins. Defaults to {@code false}.
 	 */
-	private boolean isTychoBuild = false.
+	private boolean isTychoBuild = false
 	
 	/**
 	 * If set, a <a href="http://linux.die.net/man/1/xvfb">Xvfb</a> and a
 	 * <a href="http://www.nongnu.org/ratpoison/">ratpoison window manager</a> shall be created for the display
 	 * {@code :<displayNumber>}. Defaults to {@code null}.
 	 */
-	private int displayNumber = null
+	private Integer displayNumber = null
 
     /**
      * If set, the jobs named in this list will be triggered if the configured job completes successfully.
