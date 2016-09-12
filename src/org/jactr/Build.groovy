@@ -21,7 +21,7 @@ def run(Config config) {
 		   }
 		   
 		   // Update dependencies
-		   if(dependencyToUpdate && newDependencyVersion) {
+		   if(config.script.dependencyToUpdate && config.script.newDependencyVersion) {
 		      // dependencyToUpdate and newDependencyVersion are job parameters
 		      maven('''-Dincludes='''+dependencyToUpdate+''' \
 		               -DdepVersion='''+newDependencyVersion+''' \
