@@ -162,6 +162,7 @@ public class ConfigBuilder implements Serializable {
     public Config build() {
         parseMavenMetadata()
         def config = new org.jactr.Config(
+            this.script,
             this.releaseMetaDataURL,
             this.propertyForEclipseVersion,
             this.gitRepoURL,

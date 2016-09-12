@@ -4,6 +4,11 @@ package org.jactr;
  * A configuration for a {@link Build}.
  */
 class Config implements Serializable {
+
+    /**
+     * The script in which the config is used.
+     */
+    public final script
     
     /**
      * The label of the Jenkins node to be used to execute the job run
@@ -80,7 +85,8 @@ class Config implements Serializable {
     /**
      * This constructor shall only be used by {@link ConfigBuilder}.
      */
-    public Config(String releaseMetaDataURL,
+    public Config(script,
+           String releaseMetaDataURL,
            String propertyForEclipseVersion,
            String gitRepoURL,
            String gitCredentialsId,
@@ -90,7 +96,8 @@ class Config implements Serializable {
            List<String> jobsToUpdateToNewlyBuiltVersion,
            String mavenGroupId,
            String mavenArtifactId,
-           String mavenCurrentReleaseVersion) {  	
+           String mavenCurrentReleaseVersion) {
+        this.script = script
         this.releaseMetaDataURL = releaseMetaDataURL
         this.propertyForEclipseVersion = propertyForEclipseVersion
         this.gitRepoURL = gitRepoURL
