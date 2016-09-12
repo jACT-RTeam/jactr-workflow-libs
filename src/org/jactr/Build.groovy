@@ -156,7 +156,7 @@ def getNextVersion(Config config) {
 	//     Eclipse versions have the format /<major>.<minor>.<patch>.<qualifier>/ ,
 	// thus - needs to be replaced by . to create the latter out of the former.
 	newVersion += '-'+lastCommitHash
-	echo 'Updating version '+config.mavenMetaDataFile+' -> '+newVersion
+	echo 'Updating version '+config.mavenCurrentReleaseVersion+' -> '+newVersion
 	currentBuild.displayName = '#'+currentBuild.number+' v'+newVersion
 	return newVersion
 }
