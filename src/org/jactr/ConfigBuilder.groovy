@@ -161,7 +161,6 @@ public class ConfigBuilder implements Serializable {
      */
     public Config build() {
         parseMavenMetadata()
-        script.echo("obtained maven metadata")
         def config = new org.jactr.Config(
             this.releaseMetaDataURL,
             this.propertyForEclipseVersion,
@@ -174,7 +173,6 @@ public class ConfigBuilder implements Serializable {
             this.mavenGroupId,
             this.mavenArtifactId,
             this.mavenCurrentReleaseVersion)
-        script.echo("config="+config)
         return config
     }
 	
