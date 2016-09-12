@@ -20,6 +20,19 @@ def run(Config config) {
 		   		git url: config.gitRepoURL
 		   }
 		   
+		   // Update dependencies
+		   if(dependencyToUpdate && newDependencyVersion) {
+		      // dependencyToUpdate and newDependencyVersion are job parameters
+		      maven('''-Dincludes='''+dependencyToUpdate+''' \
+		               -DdepVersion='''+newDependencyVersion+''' \
+		               versions:use-dep-version''')
+		      // diff is included to ease debugging
+		      sh '''git diff \
+		            && git add pom.xml \
+                    && git commit -m "Bump version of dependency '''+dependencyToUpdate+''' to '''+newDependencyVersion+'''" \
+                    && git push'''
+		   }
+		   
 		   stage name: 'Set versions', concurrency: 1
 		   def newVersionForMaven = getNextVersion(config)
 		   def newVersionForEclipse = newVersionForMaven.replaceAll('-', '.')
@@ -80,6 +93,15 @@ def run(Config config) {
 	       				 -DskipITs=true \
 	       				 site-deploy''')
 	     	}
+	     	
+	     	// Trigger downstream jobs
+	     	for(jobToTrigger in config.jobsToUpdateToNewlyBuiltVersion) {
+                build job: jobToTrigger,
+                      parameters: [
+                            string(name: 'dependencyToUpdate', value: config.mavenGroupId+':'+config.mavenArtifactId),
+                            string(name: 'newDependencyVersion', value: newVersionForMaven)],
+                      wait: false
+            }
 	    }
 	}
 }
