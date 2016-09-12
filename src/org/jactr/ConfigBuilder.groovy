@@ -48,9 +48,9 @@ public class ConfigBuilder implements Serializable {
     /**
      * If set, a <a href="http://linux.die.net/man/1/xvfb">Xvfb</a> and a
      * <a href="http://www.nongnu.org/ratpoison/">ratpoison window manager</a> shall be created for the display
-     * {@code :<displayNumber>}. Defaults to {@code null}.
+     * {@code :<displayNumber>}. Defaults to {@code 0}.
      */
-    private Integer displayNumber = null
+    private Integer displayNumber = 0
     
     /**
      * If set, the jobs named in this list will be triggered if the configured job completes successfully.
