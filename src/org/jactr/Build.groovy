@@ -49,10 +49,12 @@ def run(Config config) {
 	     				-D'''+config.propertyForEclipseVersion+'''='''+newVersionForEclipse+''' \
 		       		    clean verify''')
    		   } finally {
-   		   	   sh '''kill $(cat '''+tmpDir+'''/ratpoison.pid);
-   		   	         rm '''+tmpDir+'''/ratpoison.pid;
-   		   	         kill $(cat '''+tmpDir+'''/xvfb.pid);
-   		   	   		 rm '''+tmpDir+'''/xvfb.pid'''
+   		       if(config.displayNumber) {
+       		   	   sh '''kill $(cat '''+tmpDir+'''/ratpoison.pid);
+       		   	         rm '''+tmpDir+'''/ratpoison.pid;
+       		   	         kill $(cat '''+tmpDir+'''/xvfb.pid);
+       		   	   		 rm '''+tmpDir+'''/xvfb.pid'''
+   	   		   }
    		   }
 	
 	       stage name:"Deploy", concurrency: 1
