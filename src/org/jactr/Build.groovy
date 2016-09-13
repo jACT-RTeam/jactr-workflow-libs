@@ -13,6 +13,8 @@ def run(Config config) {
 	   					[$class: 'FileBinding', credentialsId: 'upload.server.ssh.signature.file', variable: 'PATH_TO_UPLOAD_SERVER_SSH_FINGERPRINT_FILE'],
 	   					[$class: 'StringBinding', credentialsId: 'upload.server.name', variable: 'UPLOAD_SERVER_NAME'],]) {
 	   					
+           def tmpDir=pwd tmp: true
+	   					
 		   stage 'Checkout'
 		   if(config.gitCredentialsId) {
 		   		git url: config.gitRepoURL, credentialsId: config.gitCredentialsId
@@ -21,7 +23,6 @@ def run(Config config) {
 		   }
 		   
 		   stage name: 'Set versions', concurrency: 1
-		   def tmpDir=pwd tmp: true
 		   def newVersionForMaven = getNextVersion(config)
 		   def newVersionForEclipse = newVersionForMaven.replaceAll('-', '.')
 		   if(config.isTychoBuild) {
@@ -36,7 +37,6 @@ def run(Config config) {
 		   }
 	       
 	       stage name: "Clean & verify", concurrency: 1
-	       def tmpDir=pwd tmp: true
 	       if(config.displayNumber) {
 	       		sh '''Xvfb :'''+config.displayNumber+''' -screen 0 1920x1080x16 -nolisten tcp -fbdir /var/run &
 	       			  echo $! > '''+tmpDir+'''/xvfb.pid;
