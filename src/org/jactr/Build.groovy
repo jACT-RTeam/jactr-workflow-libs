@@ -20,20 +20,8 @@ def run(Config config) {
 		   		git url: config.gitRepoURL
 		   }
 		   
-		   // Update dependencies
-		   // Note that dependencyToUpdate and newDependencyVersion need to be configured as job parameters.
-		   if(config.script.hasProperty("dependencyToUpdate") && config.script.hasProperty("newDependencyVersion")) {
-		      maven('''-Dincludes='''+dependencyToUpdate+''' \
-		               -DdepVersion='''+newDependencyVersion+''' \
-		               versions:use-dep-version''')
-		      // diff is included to ease debugging
-		      sh '''git diff \
-		            && git add pom.xml \
-                    && git commit -m "Bump version of dependency '''+dependencyToUpdate+''' to '''+newDependencyVersion+'''" \
-                    && git push'''
-		   }
-		   
 		   stage name: 'Set versions', concurrency: 1
+		   def tmpDir=pwd tmp: true
 		   def newVersionForMaven = getNextVersion(config)
 		   def newVersionForEclipse = newVersionForMaven.replaceAll('-', '.')
 		   if(config.isTychoBuild) {
@@ -94,13 +82,37 @@ def run(Config config) {
 	       				 site-deploy''')
 	     	}
 	     	
-	     	// Trigger downstream jobs
-	     	for(jobToTrigger in config.jobsToUpdateToNewlyBuiltVersion) {
-                build job: jobToTrigger,
-                      parameters: [
-                            string(name: 'dependencyToUpdate', value: config.mavenGroupId+':'+config.mavenArtifactId),
-                            string(name: 'newDependencyVersion', value: newVersionForMaven)],
-                      wait: false
+	     	stage name:"Update dependencies", concurrency: 1
+	     	// Update dependent projects
+	     	def dependencyToUpdate=config.mavenGroupId+':'+config.mavenArtifactId
+	     	for(dependencyUpdate in config.dependenciesToUpdateToNewlyBuiltVersion) {
+	     	    // See git man page for the git store credential for information on the file format.
+                // https://git-scm.com/docs/git-credential-store
+                withCredentials([[$class  : 'FileBinding', credentialsId: dependencyUpdate.gitFileCredentialsId,
+                              variable: 'GIT_CREDENTIALS_FILE']]) {
+                    sh 'git config --local credential.username RepoUserName'
+                    sh "git config --local credential.helper 'store --file=${env.GIT_CREDENTIALS_FILE}'"
+                    
+                    // Clone the repository
+                    sh '''cd '''+tmpDir+''' \
+                            && git clone -n --depth 1 '''+dependencyUpdate.gitRepoURL+''' \
+                            && cd '''+dependencyUpdate.gitRepoName+''' \
+                            && git reset HEAD \
+                            && git checkout HEAD '''+dependencyUpdate.pomPath
+                    // Update version
+                    maven('''--file '''+tmpDir+'''/'''+dependencyUpdate.gitRepoName+'''/'''+dependencyUpdate.pomPath+''' \
+                             -Dincludes='''+dependencyToUpdate+''' \
+                             -DdepVersion='''+newVersionForMaven+''' \
+                             versions:use-dep-version''')
+                    // Push the change
+                    sh '''cd '''+tmpDir+'''/'''+dependencyUpdate.gitRepoName+''' \
+                          && git diff '''+dependencyUpdate.pomPath+''' \
+                          && git add '''+dependencyUpdate.pomPath+''' \
+                          && git commit -m "Bump version of dependency '''+dependencyToUpdate+''' to '''+newVersionForMaven+''' in '''+dependencyUpdate.pomPath+'''" \
+                          && git push'''
+                          
+                    sh 'git config --local --remove-section credential'
+                }
             }
 	    }
 	}

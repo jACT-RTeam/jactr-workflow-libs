@@ -52,11 +52,9 @@ class Config implements Serializable {
     public final Integer displayNumber
     
     /**
-     * If set, the jobs named in this list will be triggered if the configured job completes successfully.
-     * Triggering will include job parameters to have these jobs update their dependencies to cover the new
-     * version created by the configured job.
+     * If set, the dependent projects in this list will be updated if the configured job completes successfully.
      */
-    public List<String> jobsToUpdateToNewlyBuiltVersion
+    public List<DependencyUpdate> dependenciesToUpdateToNewlyBuiltVersion
     
     /**
      * The Maven groupId obtained from {@link #releaseMetaDataURL} before the configuration is build.
@@ -93,7 +91,7 @@ class Config implements Serializable {
            Boolean isTychoBuild,
            Integer displayNumber,
            String labelForJenkinsNode,
-           List<String> jobsToUpdateToNewlyBuiltVersion,
+           List<DependencyUpdate> dependenciesToUpdateToNewlyBuiltVersion,
            String mavenGroupId,
            String mavenArtifactId,
            String mavenCurrentReleaseVersion) {
@@ -105,7 +103,7 @@ class Config implements Serializable {
         this.isTychoBuild = isTychoBuild
         this.displayNumber = displayNumber
         this.labelForJenkinsNode = labelForJenkinsNode
-        this.jobsToUpdateToNewlyBuiltVersion = jobsToUpdateToNewlyBuiltVersion
+        this.dependenciesToUpdateToNewlyBuiltVersion = dependenciesToUpdateToNewlyBuiltVersion
         this.mavenGroupId = mavenGroupId
         this.mavenArtifactId = mavenArtifactId
         this.mavenCurrentReleaseVersion = mavenCurrentReleaseVersion

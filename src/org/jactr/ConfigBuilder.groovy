@@ -57,7 +57,7 @@ public class ConfigBuilder implements Serializable {
      * Triggering will include job parameters to have these jobs update their dependencies to cover the new
      * version created by the configured job. Defaults to {@code null}.
      */
-    private List<String> jobsToUpdateToNewlyBuiltVersion = null
+    private List<DependencyUpdate> dependenciesToUpdateToNewlyBuiltVersion = new java.util.ArrayList()
     
     /**
      * The Maven groupId obtained from {@link #releaseMetaDataURL} before the configuration is build.
@@ -147,12 +147,15 @@ public class ConfigBuilder implements Serializable {
     }
 
     /**
-     * Set a list of job names that will be triggered if the configured job completes successfully.
-     * Triggering will include job parameters to have these jobs update their dependencies to cover the new
-     * version created by the configured job.
+     * Adds a dependency to be updated if the configured job completes successfully.
      */
-    public ConfigBuilder updateDependentJobsToNewlyBuiltVersion(String... jobNames) {
-        this.jobsToUpdateToNewlyBuiltVersion = java.util.Arrays.asList(jobNames)
+    public ConfigBuilder updateDependencyToNewlyBuiltVersion(
+            String gitRepoName,
+            String gitRepoURL,
+            String gitFileCredentialsId,
+            String pomPath = "pom.xml") {
+        def dependencyUpdate = new DependencyUpdate(gitRepoName, gitRepoURL, gitFileCredentialsId, pomPath)
+        jobsToUpdateToNewlyBuiltVersion.add(dependencyUpdate)
         return this
     }
 
@@ -170,7 +173,7 @@ public class ConfigBuilder implements Serializable {
             this.isTychoBuild,
             this.displayNumber,
             this.labelForJenkinsNode,
-            this.jobsToUpdateToNewlyBuiltVersion,
+            this.dependenciesToUpdateToNewlyBuiltVersion,
             this.mavenGroupId,
             this.mavenArtifactId,
             this.mavenCurrentReleaseVersion)
