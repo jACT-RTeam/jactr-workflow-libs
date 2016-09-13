@@ -90,8 +90,8 @@ def run(Config config) {
                 // https://git-scm.com/docs/git-credential-store
                 withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'gitlab.credentials', usernameVariable: 'GIT_REPO_USER', passwordVariable: 'GIT_REPO_PASSWORD'],
                                  [$class: 'FileBinding', credentialsId: dependencyUpdate.gitFileCredentialsId, variable: 'GIT_CREDENTIALS_FILE']]) {
-                    sh "git config --local credential.username ${env.GIT_REPO_USER}"
-                    sh "git config --local credential.helper 'store --file=${env.GIT_CREDENTIALS_FILE}'"
+                    sh "cd ${tmpDir} && git config --local credential.username ${env.GIT_REPO_USER}"
+                    sh "cd ${tmpDir} && git config --local credential.helper 'store --file=${env.GIT_CREDENTIALS_FILE}'"
                     
                     // Clone the repository
                     sh '''cd '''+tmpDir+''' \
@@ -111,7 +111,7 @@ def run(Config config) {
                           && git commit -m "Bump version of dependency '''+dependencyToUpdate+''' to '''+newVersionForMaven+''' in '''+dependencyUpdate.pomPath+'''" \
                           && git push'''
                           
-                    sh 'git config --local --remove-section credential'
+                    sh "cd ${tmpDir} && git config --local --remove-section credential"
                 }
             }
 	    }
