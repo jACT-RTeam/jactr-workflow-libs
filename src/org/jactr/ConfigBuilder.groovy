@@ -155,7 +155,7 @@ public class ConfigBuilder implements Serializable {
             String gitFileCredentialsId,
             String pomPath = "pom.xml") {
         def dependencyUpdate = new DependencyUpdate(gitRepoName, gitRepoURL, gitFileCredentialsId, pomPath)
-        jobsToUpdateToNewlyBuiltVersion.add(dependencyUpdate)
+        dependenciesToUpdateToNewlyBuiltVersion.add(dependencyUpdate)
         return this
     }
 
