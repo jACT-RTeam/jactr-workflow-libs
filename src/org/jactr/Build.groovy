@@ -93,7 +93,7 @@ def run(Config config) {
                     // Clone the repository
                     sh '''cd '''+tmpDir+''' \
                             && git clone \
-                                -n \
+                                --no-checkout \
                                 --depth 1 \
                                 --config credential.username='''+env.GIT_REPO_USER+''' \
                                 --config credential.helper='store --file='''+env.GIT_CREDENTIALS_FILE+'''' \
