@@ -95,8 +95,8 @@ def run(Config config) {
                             && git clone \
                                 -n \
                                 --depth 1 \
-                                --config credential.username '''+env.GIT_REPO_USER+''' \
-                                --config credential.helper 'store --file='''+env.GIT_CREDENTIALS_FILE+'''' \
+                                --config credential.username='''+env.GIT_REPO_USER+''' \
+                                --config credential.helper='store --file='''+env.GIT_CREDENTIALS_FILE+'''' \
                                 '''+dependencyUpdate.gitRepoURL+''' \
                             && cd '''+dependencyUpdate.gitRepoName+''' \
                             && git reset HEAD \
