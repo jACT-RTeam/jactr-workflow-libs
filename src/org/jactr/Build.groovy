@@ -111,7 +111,7 @@ def run(Config config) {
                           && git diff '''+dependencyUpdate.pomPath+''' \
                           && git add '''+dependencyUpdate.pomPath+''' \
                           && git commit -m "Bump version of dependency '''+dependencyToUpdate+''' to '''+newVersionForMaven+''' in '''+dependencyUpdate.pomPath+'''" \
-                          && git push
+                          && git push \
                           && git config --local --remove-section credential'''
                 }
             }
