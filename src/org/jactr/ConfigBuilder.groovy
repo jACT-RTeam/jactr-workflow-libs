@@ -1,5 +1,9 @@
 package org.jactr;
 
+import org.jactr.update.AbstractDependencyUpdate;
+import org.jactr.update.EclipseDependencyUpdate;
+import org.jactr.update.MavenDependencyUpdate;
+
 /**
  * A builder for a {@link Config} that will be used in a Jenkins pipeline or multi-branch
  * pipeline job.
@@ -57,7 +61,7 @@ public class ConfigBuilder implements Serializable {
      * Triggering will include job parameters to have these jobs update their dependencies to cover the new
      * version created by the configured job. Defaults to {@code null}.
      */
-    private List<DependencyUpdate> dependenciesToUpdateToNewlyBuiltVersion = new java.util.ArrayList()
+    private List<AbstractDependencyUpdate> dependenciesToUpdateToNewlyBuiltVersion = new java.util.ArrayList()
     
     /**
      * The Maven groupId obtained from {@link #releaseMetaDataURL} before the configuration is build.
@@ -145,16 +149,30 @@ public class ConfigBuilder implements Serializable {
         this.displayNumber = displayNumber
         return this
     }
+    
+    /**
+     * Configures an update of an Eclipse plug-in project. The update will be performed
+     * if the configured job completes successfully.
+     */
+    public ConfigBuilder updateEclipseDependencyToNewlyBuiltVersion(
+            String gitRepoName,
+            String gitRepoURL,
+            String gitFileCredentialsId) {
+        def dependencyUpdate = new EclipseDependencyUpdate(gitRepoName, gitRepoURL, gitFileCredentialsId)
+        dependenciesToUpdateToNewlyBuiltVersion.add(dependencyUpdate)
+        return this
+    }
 
     /**
-     * Adds a dependency to be updated if the configured job completes successfully.
+     * Configures an update of a Maven project. The update will be performed
+     * if the configured job completes successfully.
      */
-    public ConfigBuilder updateDependencyToNewlyBuiltVersion(
+    public ConfigBuilder updateMavenDependencyToNewlyBuiltVersion(
             String gitRepoName,
             String gitRepoURL,
             String gitFileCredentialsId,
             String pomPath = "pom.xml") {
-        def dependencyUpdate = new DependencyUpdate(gitRepoName, gitRepoURL, gitFileCredentialsId, pomPath)
+        def dependencyUpdate = new MavenDependencyUpdate(gitRepoName, gitRepoURL, gitFileCredentialsId, pomPath)
         dependenciesToUpdateToNewlyBuiltVersion.add(dependencyUpdate)
         return this
     }

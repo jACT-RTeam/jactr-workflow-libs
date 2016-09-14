@@ -84,7 +84,11 @@ def run(Config config) {
 	     	
 	     	stage name:"Update dependencies", concurrency: 1
 	     	// Update dependent projects
-	     	def dependencyToUpdate=config.mavenGroupId+':'+config.mavenArtifactId
+	     	def dependencyToUpdateForMaven=config.mavenGroupId+':'+config.mavenArtifactId
+	     	def dependencyToUpdateForEclipse=config.mavenGroupId
+	     	if(!dependencyToUpdateForEclipse.endsWith(config.mavenArtifactId)) {
+	     	     dependencyToUpdateForEclipse += "."+config.mavenArtifactId
+	     	}
 	     	for(dependencyUpdate in config.dependenciesToUpdateToNewlyBuiltVersion) {
 	     	    // See git man page for the git store credential for information on the file format.
                 // https://git-scm.com/docs/git-credential-store
@@ -100,17 +104,18 @@ def run(Config config) {
                                 '''+dependencyUpdate.gitRepoURL+''' \
                             && cd '''+dependencyUpdate.gitRepoName+''' \
                             && git reset HEAD \
-                            && git checkout HEAD '''+dependencyUpdate.pomPath
-                    // Update version
-                    maven('''--file '''+tmpDir+'''/'''+dependencyUpdate.gitRepoName+'''/'''+dependencyUpdate.pomPath+''' \
-                             -Dincludes='''+dependencyToUpdate+''' \
-                             -DdepVersion='''+newVersionForMaven+''' \
-                             versions:use-dep-version''')
+                            && git checkout HEAD '''+dependencyUpdate.modifiedFilesPattern
+                            
+                    // Update version in the dependency declaration
+                    dependencyUpdate.updateDependency(config.script,
+                        dependencyToUpdateForMaven, newVersionForMaven,
+                        dependencyToUpdateForEclipse, newVersionForEclipse)
+                        
                     // Push the change
                     sh '''cd '''+tmpDir+'''/'''+dependencyUpdate.gitRepoName+''' \
-                          && git diff '''+dependencyUpdate.pomPath+''' \
-                          && git add '''+dependencyUpdate.pomPath+''' \
-                          && git commit -m "Bump version of dependency '''+dependencyToUpdate+''' to '''+newVersionForMaven+''' in '''+dependencyUpdate.pomPath+'''" \
+                          && git diff '''+dependencyUpdate.modifiedFilesPattern+''' \
+                          && git add '''+dependencyUpdate.modifiedFilesPattern+''' \
+                          && git commit -m "Bump version of dependency '''+dependencyToUpdateForMaven+''' to '''+newVersionForMaven+''' in '''+dependencyUpdate.modifiedFilesPattern+'''" \
                           && git push \
                           && git config --local --remove-section credential'''
                 }
