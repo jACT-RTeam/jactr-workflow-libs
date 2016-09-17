@@ -56,7 +56,7 @@ def run(Config config) {
                                     --no-checkout \
                                     --depth 1 \
                                     --config credential.username="""+env.GIT_REPO_USER+""" \
-                                    --config credential.helper='store --file="""+env.GIT_CREDENTIALS_FILE+"""' \
+                                    --config credential.helper="store --file="""+env.GIT_CREDENTIALS_FILE+"""" \
                                     """+dependencyUpdate.gitRepoURL+"""
                                 fi \
                             && cd """+dependencyUpdate.gitRepoName+""" \
@@ -68,7 +68,7 @@ def run(Config config) {
                                     --no-checkout \
                                     --depth 1 \
                                     --config credential.username="""+env.GIT_REPO_USER+""" \
-                                    --config credential.helper='store --file="""+env.GIT_CREDENTIALS_FILE+"""' \
+                                    --config credential.helper="store --file="""+env.GIT_CREDENTIALS_FILE+"""" \
                                     """+dependencyUpdate.gitRepoURL+"""
                                 fi \
                             && cd """+dependencyUpdate.gitRepoName+""" \
