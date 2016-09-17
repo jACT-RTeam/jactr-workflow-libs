@@ -1,7 +1,5 @@
 package org.jactr;
 
-import org.jactr.update.AbstractDependencyUpdate;
-
 /**
  * A configuration for a {@link Build}.
  */

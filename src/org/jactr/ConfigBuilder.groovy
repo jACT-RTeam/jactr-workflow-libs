@@ -1,6 +1,5 @@
 package org.jactr;
 
-import org.jactr.update.AbstractDependencyUpdate;
 import org.jactr.update.EclipseDependencyUpdate;
 import org.jactr.update.MavenDependencyUpdate;
 
