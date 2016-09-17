@@ -50,27 +50,15 @@ def run(Config config) {
                 withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'gitlab.credentials', usernameVariable: 'GIT_REPO_USER', passwordVariable: 'GIT_REPO_PASSWORD'],
                                  [$class: 'FileBinding', credentialsId: dependencyUpdate.gitFileCredentialsId, variable: 'GIT_CREDENTIALS_FILE']]) {
                     // Ensure the repository has been cloned, checkout the file to be modified
-                    echo """cd """+tmpDir+""" \
-                            && if [ ! -e """+dependencyUpdate.gitRepoName+""" ]; then 
-                                git clone \
-                                    --no-checkout \
-                                    --depth 1 \
-                                    --config credential.username="""+env.GIT_REPO_USER+""" \
-                                    --config credential.helper="store --file="""+env.GIT_CREDENTIALS_FILE+"""" \
-                                    """+dependencyUpdate.gitRepoURL+"""
-                                fi \
-                            && cd """+dependencyUpdate.gitRepoName+""" \
-                            && git reset HEAD \
-                            && git checkout HEAD """+dependencyUpdate.modifiedFilesPattern
                     sh """cd """+tmpDir+""" \
                             && if [ ! -e """+dependencyUpdate.gitRepoName+""" ]; then 
                                 git clone \
                                     --no-checkout \
                                     --depth 1 \
-                                    --config credential.username="""+env.GIT_REPO_USER+""" \
-                                    --config credential.helper="store --file="""+env.GIT_CREDENTIALS_FILE+"""" \
+                                    --config credential.username='"""+env.GIT_REPO_USER+"""' \
+                                    --config credential.helper='store --file="""+env.GIT_CREDENTIALS_FILE+"""' \
                                     """+dependencyUpdate.gitRepoURL+"""
-                                fi \
+                                fi; \
                             && cd """+dependencyUpdate.gitRepoName+""" \
                             && git reset HEAD \
                             && git checkout HEAD """+dependencyUpdate.modifiedFilesPattern
