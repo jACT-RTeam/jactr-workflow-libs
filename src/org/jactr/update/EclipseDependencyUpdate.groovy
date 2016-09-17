@@ -54,8 +54,8 @@ public class EclipseDependencyUpdate /* extends AbstractDependencyUpdate */ impl
         script.sh '''sed \
                      --in-place \
                      --regexp-extended \
-                       's/'''+dependencyToUpdateForEclipse+''';bundle-version="[^"]*"'''
-                     +'''/'''+dependencyToUpdateForEclipse+''';bundle-version="'''+newVersionForEclipse+'''"/g' \
+                       \'s/'''+dependencyToUpdateForEclipse+''';bundle-version="[^"]*"'''
+                     +'''/'''+dependencyToUpdateForEclipse+''';bundle-version="'''+newVersionForEclipse+'''"/g\' \
                      '''+pathToManifestMf
     }
 
