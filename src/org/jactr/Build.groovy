@@ -59,7 +59,7 @@ def run(Config config) {
                                     --config credential.helper='store --file="""+env.GIT_CREDENTIALS_FILE+"""' \
                                     """+dependencyUpdate.gitRepoURL+"""
                                 fi; \
-                            && cd """+dependencyUpdate.gitRepoName+""" \
+                            cd """+dependencyUpdate.gitRepoName+""" \
                             && git reset HEAD \
                             && git checkout HEAD """+dependencyUpdate.modifiedFilesPattern
                             
