@@ -119,6 +119,10 @@ def run(Config config) {
                           && git add '''+dependencyUpdate.modifiedFilesPattern+''' \
                           && git commit -m "Bump version of dependency '''+dependencyToUpdateForMaven+''' to '''+newVersionForMaven+''' in '''+dependencyUpdate.modifiedFilesPattern+'''" \
                           && git push \
+                            --config user.name='jenkins.monochromata.de' \
+                            --config credential.username='"""+env.GIT_REPO_USER+"""' \
+                            --config credential.helper='store --file="""+env.GIT_CREDENTIALS_FILE+"""' \
+                            --config push.default='matching' \
                           && git config --local --remove-section credential'''
                 }
             }
