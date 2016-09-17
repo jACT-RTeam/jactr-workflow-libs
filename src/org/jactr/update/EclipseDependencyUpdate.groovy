@@ -28,8 +28,7 @@ public class EclipseDependencyUpdate /* extends AbstractDependencyUpdate */ impl
     
     public EclipseDependencyUpdate(String gitRepoName,
                             String gitRepoURL,
-                            String gitFileCredentialsId,
-                            String modifiedFilesPattern) {
+                            String gitFileCredentialsId) {
         this.gitRepoName = gitRepoName
         this.gitRepoURL = gitRepoURL
         this.gitFileCredentialsId = gitFileCredentialsId
