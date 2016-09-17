@@ -51,16 +51,17 @@ public class EclipseDependencyUpdate /* extends AbstractDependencyUpdate */ impl
     public void updateDependency(script,
                                  dependencyToUpdateForMaven, newVersionForMaven,
                                  dependencyToUpdateForEclipse, newVersionForEclipse) {
+        def tmpDir=script.pwd tmp: true
         script.echo '''sed \
                      --in-place \
                      --regexp-extended \
                        \'s/'''+dependencyToUpdateForEclipse+''';bundle-version="[^"]*"/'''+dependencyToUpdateForEclipse+''';bundle-version="'''+newVersionForEclipse+'''"/g\' \
-                     '''+pathToManifestMf
+                     '''+tmpDir+'''/'''+gitRepoName+'''/'''+pathToManifestMf
         script.sh '''sed \
                      --in-place \
                      --regexp-extended \
                        \'s/'''+dependencyToUpdateForEclipse+''';bundle-version="[^"]*"/'''+dependencyToUpdateForEclipse+''';bundle-version="'''+newVersionForEclipse+'''"/g\' \
-                     '''+pathToManifestMf
+                     '''+tmpDir+'''/'''+gitRepoName+'''/'''+pathToManifestMf
     }
 
 }
