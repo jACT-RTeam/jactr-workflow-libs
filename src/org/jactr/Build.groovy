@@ -103,8 +103,8 @@ def run(Config config) {
                                     --config credential.username='''+env.GIT_REPO_USER+''' \
                                     --config credential.helper='store --file='''+env.GIT_CREDENTIALS_FILE+'''' \
                                     '''+dependencyUpdate.gitRepoURL+'''
-                                fi
-                            cd '''+dependencyUpdate.gitRepoName+''' \
+                                fi \
+                            && cd '''+dependencyUpdate.gitRepoName+''' \
                             && git reset HEAD \
                             && git checkout HEAD '''+dependencyUpdate.modifiedFilesPattern
                             
