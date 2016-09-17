@@ -2,6 +2,8 @@ package org.jactr.update;
 
 /**
  * An update to a dependency.
+ * <p>
+ * This class is currently unused since Jenkins pipeline scripts do not support inheritance yet.
  */
 abstract class AbstractDependencyUpdate implements Serializable {
 

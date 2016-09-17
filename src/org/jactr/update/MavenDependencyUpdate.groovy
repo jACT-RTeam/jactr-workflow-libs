@@ -3,7 +3,28 @@ package org.jactr.update;
 /**
  * Updates a dependency in a Maven POM file.
  */
-public class MavenDependencyUpdate extends AbstractDependencyUpdate {
+public class MavenDependencyUpdate /* extends AbstractDependencyUpdate */ implements Serializable  {
+
+    /**
+     * The name of the Git repository to update. 
+     */
+    public final String gitRepoName
+    
+    /**
+     * The URL of the Git repository to clone and update.
+     */
+    public final String gitRepoURL
+    
+    /**
+     * The ID of the file credentials that are used to authenticate to the Git repository.
+     */
+    public final String gitFileCredentialsId
+    
+    /**
+     * A pattern to match the files in the Git repository to be checked out,
+     * modified and committed by this update.
+     */
+    public final String modifiedFilesPattern
 
     /**
      * The path to the Maven POM file to update. The path is relative to the root of the Git repository.
@@ -14,7 +35,10 @@ public class MavenDependencyUpdate extends AbstractDependencyUpdate {
                             String gitRepoURL,
                             String gitFileCredentialsId,
                             String pomPath) {
-        super(gitRepoName, gitRepoURL, gitFileCredentialsId, pomPath)
+        this.gitRepoName = gitRepoName
+        this.gitRepoURL = gitRepoURL
+        this.gitFileCredentialsId = gitFileCredentialsId
+        this.modifiedFilesPattern = pomPath
         this.pomPath = pomPath
     }
     

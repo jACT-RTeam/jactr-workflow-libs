@@ -61,7 +61,7 @@ public class ConfigBuilder implements Serializable {
      * Triggering will include job parameters to have these jobs update their dependencies to cover the new
      * version created by the configured job. Defaults to {@code null}.
      */
-    private List<AbstractDependencyUpdate> dependenciesToUpdateToNewlyBuiltVersion = new java.util.ArrayList()
+    private List /*<AbstractDependencyUpdate>*/ dependenciesToUpdateToNewlyBuiltVersion = new java.util.ArrayList()
     
     /**
      * The Maven groupId obtained from {@link #releaseMetaDataURL} before the configuration is build.

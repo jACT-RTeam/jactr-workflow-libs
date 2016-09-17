@@ -56,7 +56,7 @@ class Config implements Serializable {
     /**
      * If set, the dependent projects in this list will be updated if the configured job completes successfully.
      */
-    public List<AbstractDependencyUpdate> dependenciesToUpdateToNewlyBuiltVersion
+    public List /*<AbstractDependencyUpdate>*/ dependenciesToUpdateToNewlyBuiltVersion
     
     /**
      * The Maven groupId obtained from {@link #releaseMetaDataURL} before the configuration is build.
@@ -93,7 +93,7 @@ class Config implements Serializable {
            Boolean isTychoBuild,
            Integer displayNumber,
            String labelForJenkinsNode,
-           List<AbstractDependencyUpdate> dependenciesToUpdateToNewlyBuiltVersion,
+           List /*<AbstractDependencyUpdate>*/ dependenciesToUpdateToNewlyBuiltVersion,
            String mavenGroupId,
            String mavenArtifactId,
            String mavenCurrentReleaseVersion) {
