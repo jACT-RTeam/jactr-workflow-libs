@@ -102,7 +102,7 @@ def run(Config config) {
                                     --depth 1 \
                                     --config credential.username='''+env.GIT_REPO_USER+''' \
                                     --config credential.helper='store --file='''+env.GIT_CREDENTIALS_FILE+'''' \
-                                    '''+dependencyUpdate.gitRepoURL+''' \
+                                    '''+dependencyUpdate.gitRepoURL+'''
                                 fi
                             cd '''+dependencyUpdate.gitRepoName+''' \
                             && git reset HEAD \
