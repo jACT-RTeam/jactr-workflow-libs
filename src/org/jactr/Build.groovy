@@ -42,9 +42,13 @@ def run(Config config) {
                                  [$class: 'FileBinding', credentialsId: dependencyUpdate.gitFileCredentialsId, variable: 'GIT_CREDENTIALS_FILE']]) {
                     // Ensure the repository has been cloned, checkout the file to be modified
                     sh """cd """+tmpDir+""" \
-                            && echo "Foo" \
                             && if [ ! -e """+dependencyUpdate.gitRepoName+""" ]; then 
-                                echo "Hello world";
+                                git clone \
+                                    --no-checkout \
+                                    --depth 1 \
+                                    --config credential.username='"""+env.GIT_REPO_USER+"""' \
+                                    --config credential.helper='store --file="""+env.GIT_CREDENTIALS_FILE+"""' \
+                                    """+dependencyUpdate.gitRepoURL+""";
                                fi \
                             && cd """+dependencyUpdate.gitRepoName+""" \
                             && git reset HEAD \
