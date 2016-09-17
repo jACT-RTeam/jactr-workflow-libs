@@ -94,14 +94,16 @@ def run(Config config) {
                 // https://git-scm.com/docs/git-credential-store
                 withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'gitlab.credentials', usernameVariable: 'GIT_REPO_USER', passwordVariable: 'GIT_REPO_PASSWORD'],
                                  [$class: 'FileBinding', credentialsId: dependencyUpdate.gitFileCredentialsId, variable: 'GIT_CREDENTIALS_FILE']]) {
-                    // Clone the repository
+                    // Ensure the repository has been cloned, checkout the file to be modified
                     sh '''cd '''+tmpDir+''' \
-                            && git clone \
-                                --no-checkout \
-                                --depth 1 \
-                                --config credential.username='''+env.GIT_REPO_USER+''' \
-                                --config credential.helper='store --file='''+env.GIT_CREDENTIALS_FILE+'''' \
-                                '''+dependencyUpdate.gitRepoURL+''' \
+                            && if [ ! -e '''+dependencyUpdate.gitRepoName+''' ]; then 
+                                git clone \
+                                    --no-checkout \
+                                    --depth 1 \
+                                    --config credential.username='''+env.GIT_REPO_USER+''' \
+                                    --config credential.helper='store --file='''+env.GIT_CREDENTIALS_FILE+'''' \
+                                    '''+dependencyUpdate.gitRepoURL+''' \
+                                fi
                             && cd '''+dependencyUpdate.gitRepoName+''' \
                             && git reset HEAD \
                             && git checkout HEAD '''+dependencyUpdate.modifiedFilesPattern
