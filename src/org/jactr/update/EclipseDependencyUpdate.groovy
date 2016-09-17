@@ -26,13 +26,22 @@ public class EclipseDependencyUpdate /* extends AbstractDependencyUpdate */ impl
      */
     public final String modifiedFilesPattern
     
+    /**
+     * The path to the {@code META-INF/MANIFEST.MF} to be modified by this update.
+     * The path will differ from {@code META-INF/MANIFEST.MF} if e.g. a (sub-)module
+     * of the referenced Maven project is to be altered.
+     */
+    public final String pathToManifestMf
+    
     public EclipseDependencyUpdate(String gitRepoName,
                             String gitRepoURL,
-                            String gitFileCredentialsId) {
+                            String gitFileCredentialsId,
+                            String pathToManifestMf) {
         this.gitRepoName = gitRepoName
         this.gitRepoURL = gitRepoURL
         this.gitFileCredentialsId = gitFileCredentialsId
-        this.modifiedFilesPattern = "META-INF/MANIFEST.MF"
+        this.modifiedFilesPattern = pathToManifestMf
+        this.pathToManifestMf = pathToManifestMf
     }
 
     /**
@@ -47,7 +56,7 @@ public class EclipseDependencyUpdate /* extends AbstractDependencyUpdate */ impl
                      --regexp-extended \
                        's/'''+dependencyToUpdateForEclipse+''';bundle-version="[^"]*"'''
                      +'''/'''+dependencyToUpdateForEclipse+''';bundle-version="'''+newVersionForEclipse+'''"/g' \
-                     META-INF/MANIFEST.MF'''
+                     '''+pathToManifestMf
     }
 
 }

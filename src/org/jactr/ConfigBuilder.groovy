@@ -156,8 +156,9 @@ public class ConfigBuilder implements Serializable {
     public ConfigBuilder updateEclipseDependencyToNewlyBuiltVersion(
             String gitRepoName,
             String gitRepoURL,
-            String gitFileCredentialsId) {
-        def dependencyUpdate = new EclipseDependencyUpdate(gitRepoName, gitRepoURL, gitFileCredentialsId)
+            String gitFileCredentialsId,
+            String pathToManifestMf) {
+        def dependencyUpdate = new EclipseDependencyUpdate(gitRepoName, gitRepoURL, gitFileCredentialsId, pathToManifestMf)
         dependenciesToUpdateToNewlyBuiltVersion.add(dependencyUpdate)
         return this
     }
