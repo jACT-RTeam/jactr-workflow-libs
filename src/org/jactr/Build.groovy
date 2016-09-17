@@ -52,14 +52,9 @@ def run(Config config) {
                     // Ensure the repository has been cloned, checkout the file to be modified
                     sh """cd """+tmpDir+""" \
                             && if [ ! -e """+dependencyUpdate.gitRepoName+""" ]; then 
-                                git clone \
-                                    --no-checkout \
-                                    --depth 1 \
-                                    --config credential.username='"""+env.GIT_REPO_USER+"""' \
-                                    --config credential.helper='store --file="""+env.GIT_CREDENTIALS_FILE+"""' \
-                                    """+dependencyUpdate.gitRepoURL+"""
-                                fi; \
-                            cd """+dependencyUpdate.gitRepoName+""" \
+                                git clone --no-checkout --depth 1 --config credential.username="""+env.GIT_REPO_USER+""" --config credential.helper='store --file="""+env.GIT_CREDENTIALS_FILE+"""' """+dependencyUpdate.gitRepoURL+"""
+                                fi \
+                            && cd """+dependencyUpdate.gitRepoName+""" \
                             && git reset HEAD \
                             && git checkout HEAD """+dependencyUpdate.modifiedFilesPattern
                             
