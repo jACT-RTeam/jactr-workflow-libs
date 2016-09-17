@@ -35,6 +35,60 @@ def run(Config config) {
 			   			-D'''+config.propertyForEclipseVersion+'''='''+newVersionForEclipse+''' \
 					    versions:set''')
 		   }
+		   
+		   
+            stage name:"Update dependencies", concurrency: 1
+            // Update dependent projects
+            def dependencyToUpdateForMaven=config.mavenGroupId+':'+config.mavenArtifactId
+            def dependencyToUpdateForEclipse=config.mavenGroupId
+            if(!dependencyToUpdateForEclipse.endsWith(config.mavenArtifactId)) {
+                 dependencyToUpdateForEclipse += "."+config.mavenArtifactId
+            }
+            for(dependencyUpdate in config.dependenciesToUpdateToNewlyBuiltVersion) {
+                // See git man page for the git store credential for information on the file format.
+                // https://git-scm.com/docs/git-credential-store
+                withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'gitlab.credentials', usernameVariable: 'GIT_REPO_USER', passwordVariable: 'GIT_REPO_PASSWORD'],
+                                 [$class: 'FileBinding', credentialsId: dependencyUpdate.gitFileCredentialsId, variable: 'GIT_CREDENTIALS_FILE']]) {
+                    // Ensure the repository has been cloned, checkout the file to be modified
+                    echo """cd """+tmpDir+""" \
+                            && if [ ! -e """+dependencyUpdate.gitRepoName+""" ]; then 
+                                git clone \
+                                    --no-checkout \
+                                    --depth 1 \
+                                    --config credential.username="""+env.GIT_REPO_USER+""" \
+                                    --config credential.helper='store --file="""+env.GIT_CREDENTIALS_FILE+"""' \
+                                    """+dependencyUpdate.gitRepoURL+"""
+                                fi \
+                            && cd """+dependencyUpdate.gitRepoName+""" \
+                            && git reset HEAD \
+                            && git checkout HEAD """+dependencyUpdate.modifiedFilesPattern
+                    sh """cd """+tmpDir+""" \
+                            && if [ ! -e """+dependencyUpdate.gitRepoName+""" ]; then 
+                                git clone \
+                                    --no-checkout \
+                                    --depth 1 \
+                                    --config credential.username="""+env.GIT_REPO_USER+""" \
+                                    --config credential.helper='store --file="""+env.GIT_CREDENTIALS_FILE+"""' \
+                                    """+dependencyUpdate.gitRepoURL+"""
+                                fi \
+                            && cd """+dependencyUpdate.gitRepoName+""" \
+                            && git reset HEAD \
+                            && git checkout HEAD """+dependencyUpdate.modifiedFilesPattern
+                            
+                    // Update version in the dependency declaration
+                    dependencyUpdate.updateDependency(config.script,
+                        dependencyToUpdateForMaven, newVersionForMaven,
+                        dependencyToUpdateForEclipse, newVersionForEclipse)
+                        
+                    // Push the change
+                    sh '''cd '''+tmpDir+'''/'''+dependencyUpdate.gitRepoName+''' \
+                          && git diff '''+dependencyUpdate.modifiedFilesPattern+''' \
+                          && git add '''+dependencyUpdate.modifiedFilesPattern+''' \
+                          && git commit -m "Bump version of dependency '''+dependencyToUpdateForMaven+''' to '''+newVersionForMaven+''' in '''+dependencyUpdate.modifiedFilesPattern+'''" \
+                          && git push \
+                          && git config --local --remove-section credential'''
+                }
+            }
 	       
 	       stage name: "Clean & verify", concurrency: 1
 	       if(config.displayNumber) {
@@ -82,46 +136,7 @@ def run(Config config) {
 	       				 site-deploy''')
 	     	}
 	     	
-	     	stage name:"Update dependencies", concurrency: 1
-	     	// Update dependent projects
-	     	def dependencyToUpdateForMaven=config.mavenGroupId+':'+config.mavenArtifactId
-	     	def dependencyToUpdateForEclipse=config.mavenGroupId
-	     	if(!dependencyToUpdateForEclipse.endsWith(config.mavenArtifactId)) {
-	     	     dependencyToUpdateForEclipse += "."+config.mavenArtifactId
-	     	}
-	     	for(dependencyUpdate in config.dependenciesToUpdateToNewlyBuiltVersion) {
-	     	    // See git man page for the git store credential for information on the file format.
-                // https://git-scm.com/docs/git-credential-store
-                withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'gitlab.credentials', usernameVariable: 'GIT_REPO_USER', passwordVariable: 'GIT_REPO_PASSWORD'],
-                                 [$class: 'FileBinding', credentialsId: dependencyUpdate.gitFileCredentialsId, variable: 'GIT_CREDENTIALS_FILE']]) {
-                    // Ensure the repository has been cloned, checkout the file to be modified
-                    sh """cd """+tmpDir+""" \
-                            && if [ ! -e """+dependencyUpdate.gitRepoName+""" ]; then 
-                                git clone \
-                                    --no-checkout \
-                                    --depth 1 \
-                                    --config credential.username="""+env.GIT_REPO_USER+""" \
-                                    --config credential.helper='store --file="""+env.GIT_CREDENTIALS_FILE+"""' \
-                                    """+dependencyUpdate.gitRepoURL+"""
-                                fi \
-                            && cd """+dependencyUpdate.gitRepoName+""" \
-                            && git reset HEAD \
-                            && git checkout HEAD """+dependencyUpdate.modifiedFilesPattern
-                            
-                    // Update version in the dependency declaration
-                    dependencyUpdate.updateDependency(config.script,
-                        dependencyToUpdateForMaven, newVersionForMaven,
-                        dependencyToUpdateForEclipse, newVersionForEclipse)
-                        
-                    // Push the change
-                    sh '''cd '''+tmpDir+'''/'''+dependencyUpdate.gitRepoName+''' \
-                          && git diff '''+dependencyUpdate.modifiedFilesPattern+''' \
-                          && git add '''+dependencyUpdate.modifiedFilesPattern+''' \
-                          && git commit -m "Bump version of dependency '''+dependencyToUpdateForMaven+''' to '''+newVersionForMaven+''' in '''+dependencyUpdate.modifiedFilesPattern+'''" \
-                          && git push \
-                          && git config --local --remove-section credential'''
-                }
-            }
+
 	    }
 	}
 }
