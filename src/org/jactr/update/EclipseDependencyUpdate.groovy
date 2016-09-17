@@ -51,6 +51,12 @@ public class EclipseDependencyUpdate /* extends AbstractDependencyUpdate */ impl
     public void updateDependency(script,
                                  dependencyToUpdateForMaven, newVersionForMaven,
                                  dependencyToUpdateForEclipse, newVersionForEclipse) {
+        script.echo '''sed \
+                     --in-place \
+                     --regexp-extended \
+                       \'s/'''+dependencyToUpdateForEclipse+''';bundle-version="[^"]*"'''
+                     +'''/'''+dependencyToUpdateForEclipse+''';bundle-version="'''+newVersionForEclipse+'''"/g\' \
+                     '''+pathToManifestMf
         script.sh '''sed \
                      --in-place \
                      --regexp-extended \
