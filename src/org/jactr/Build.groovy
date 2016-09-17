@@ -53,8 +53,8 @@ def run(Config config) {
                     sh """cd """+tmpDir+""" \
                             && echo "Foo" \
                             && if [ ! -e """+dependencyUpdate.gitRepoName+""" ]; then 
-                                echo "Hello world"
-                               ;fi \
+                                echo "Hello world";
+                               fi \
                             && cd """+dependencyUpdate.gitRepoName+""" \
                             && git reset HEAD \
                             && git checkout HEAD """+dependencyUpdate.modifiedFilesPattern
