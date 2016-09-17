@@ -51,6 +51,7 @@ def run(Config config) {
                                  [$class: 'FileBinding', credentialsId: dependencyUpdate.gitFileCredentialsId, variable: 'GIT_CREDENTIALS_FILE']]) {
                     // Ensure the repository has been cloned, checkout the file to be modified
                     sh """cd """+tmpDir+""" \
+                            && echo "Foo"
                             && if [ ! -e """+dependencyUpdate.gitRepoName+""" ]; then 
                                 echo "Hello world"
                                fi \
