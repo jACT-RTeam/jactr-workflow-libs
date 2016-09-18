@@ -214,7 +214,7 @@ public class ConfigBuilder implements Serializable {
                               '''+this.releaseMetaDataURL+''') \
                          && if [ "$HTTP_STATUS_CODE" -ne "200" ]; then
                                 echo "Non-200 HTTP status code $HTTP_STATUS_CODE when retrieving '''+this.releaseMetaDataURL+'''";
-                                exit -1;
+                                exit 1;
                             fi'''
             script.sh 'xpath -e metadata/groupId -q '+mavenMetaDataFile+' | sed --regexp-extended "s/<\\/?groupId>//g" > '+groupIdFile
             script.sh 'xpath -e metadata/artifactId -q '+mavenMetaDataFile+' | sed --regexp-extended "s/<\\/?artifactId>//g" > '+artifactIdFile
