@@ -208,7 +208,14 @@ public class ConfigBuilder implements Serializable {
             def groupIdFile = tmpDir+'/maven.groupId'
             def artifactIdFile = tmpDir+'/maven.artifactId'
             def versionFile = tmpDir+'/maven.release'
-            script.sh 'curl --silent '+this.releaseMetaDataURL+' > '+mavenMetaDataFile
+            script.sh '''HTTP_STATUS_CODE=$(curl --silent \
+                              --output '''+mavenMetaDataFile+''' \
+                              --write-out "%{http_code}"
+                              '''+this.releaseMetaDataURL+''') \
+                         && if [ "$HTTP_STATUS_CODE" -ne "200" ]; then
+                                echo "Non-200 HTTP status code $HTTP_STATUS_CODE when retrieving '''+this.releaseMetaDataURL+'''";
+                                exit -1;
+                            fi'''
             script.sh 'xpath -e metadata/groupId -q '+mavenMetaDataFile+' | sed --regexp-extended "s/<\\/?groupId>//g" > '+groupIdFile
             script.sh 'xpath -e metadata/artifactId -q '+mavenMetaDataFile+' | sed --regexp-extended "s/<\\/?artifactId>//g" > '+artifactIdFile
             script.sh 'xpath -e metadata/versioning/release -q '+mavenMetaDataFile+' | sed --regexp-extended "s/<\\/?release>//g" > '+versionFile
