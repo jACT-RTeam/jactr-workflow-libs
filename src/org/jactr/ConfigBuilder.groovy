@@ -210,7 +210,7 @@ public class ConfigBuilder implements Serializable {
             def versionFile = tmpDir+'/maven.release'
             script.sh '''HTTP_STATUS_CODE=$(curl --silent \
                               --output '''+mavenMetaDataFile+''' \
-                              --write-out "%{http_code}"
+                              --write-out "%{http_code}" \
                               '''+this.releaseMetaDataURL+''') \
                          && if [ "$HTTP_STATUS_CODE" -ne "200" ]; then
                                 echo "Non-200 HTTP status code $HTTP_STATUS_CODE when retrieving '''+this.releaseMetaDataURL+'''";
