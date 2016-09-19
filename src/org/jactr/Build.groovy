@@ -110,7 +110,8 @@ def run(Config config) {
                                 cd """+dependencyUpdate.gitRepoName+""" \
                                 && git config
                                         --local \
-                                        --config credential.helper='store --file="""+env.GIT_CREDENTIALS_FILE+"""' \
+                                        --add credential.username '"""+env.GIT_REPO_USER+"""' \
+                                        --add credential.helper 'store --file="""+env.GIT_CREDENTIALS_FILE+"""' \
                                 && git pull;
                             fi \
                             && git reset HEAD \
