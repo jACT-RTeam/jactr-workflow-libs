@@ -108,7 +108,7 @@ def run(Config config) {
                                 && cd """+dependencyUpdate.gitRepoName+""";
                             else 
                                 cd """+dependencyUpdate.gitRepoName+""" \
-                                && git config
+                                && git config \
                                         --local \
                                         --add credential.username '"""+env.GIT_REPO_USER+"""' \
                                         --add credential.helper 'store --file="""+env.GIT_CREDENTIALS_FILE+"""' \
