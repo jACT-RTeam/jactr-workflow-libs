@@ -164,7 +164,7 @@ public class ConfigBuilder implements Serializable {
     }
 
     /**
-     * Configures an update of a Maven project. The update will be performed
+     * Configures an update of a dependency declaration in a Maven project. The update will be performed
      * if the configured job completes successfully.
      */
     public ConfigBuilder updateMavenDependencyToNewlyBuiltVersion(
@@ -173,6 +173,21 @@ public class ConfigBuilder implements Serializable {
             String gitFileCredentialsId,
             String pomPath = "pom.xml") {
         def dependencyUpdate = new MavenDependencyUpdate(gitRepoName, gitRepoURL, gitFileCredentialsId, pomPath)
+        dependenciesToUpdateToNewlyBuiltVersion.add(dependencyUpdate)
+        return this
+    }
+    
+    /**
+     * Configures an update to a property in a Maven project. The update will be performed
+     * if the configured job completes successfully.
+     */
+    public ConfigBuilder updateMavenPropertyToNewlyBuiltVersion(
+            String gitRepoName,
+            String gitRepoURL,
+            String gitFileCredentialsId,
+            String pomPath = "pom.xml",
+            String propertyForDependency) {
+        def dependencyUpdate = new MavenPropertyUpdate(gitRepoName, gitRepoURL, gitFileCredentialsId, pomPath, propertyForDependency)
         dependenciesToUpdateToNewlyBuiltVersion.add(dependencyUpdate)
         return this
     }
