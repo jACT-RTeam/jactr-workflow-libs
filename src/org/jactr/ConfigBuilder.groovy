@@ -2,6 +2,7 @@ package org.jactr;
 
 import org.jactr.update.EclipseDependencyUpdate;
 import org.jactr.update.MavenDependencyUpdate;
+import org.jactr.update.MavenPropertyUpdate;
 
 /**
  * A builder for a {@link Config} that will be used in a Jenkins pipeline or multi-branch
