@@ -57,28 +57,24 @@ class Config implements Serializable {
     public List /*<AbstractDependencyUpdate>*/ dependenciesToUpdateToNewlyBuiltVersion
     
     /**
-     * The Maven groupId obtained from {@link #releaseMetaDataURL} before the configuration is build.
-     *
-     * @see #parseMavenMetadata()
-     * @see #build()
+     * The Maven groupId of the current release.
      */
     public final String mavenGroupId
     
     /**
-     * The Maven artifactId obtained from {@link #releaseMetaDataURL} before the configuration is build.
-     *
-     * @see #parseMavenMetadata()
-     * @see #build()
+     * The Maven artifactId of the current release.
      */
     public final String mavenArtifactId
     
     /**
-     * The last released Maven version obtained from {@link #releaseMetaDataURL} before the configuration is build.
-     *
-     * @see #parseMavenMetadata()
-     * @see #build()
+     * The last released Maven version.
      */
     public final String mavenCurrentReleaseVersion
+    
+    /**
+     * The Git commit hash that is part of {@link #mavenCurrentReleaseVersion}. 
+     */
+    public final String currentReleaseCommitHash
 	
     /**
      * This constructor shall only be used by {@link ConfigBuilder}.
@@ -94,6 +90,7 @@ class Config implements Serializable {
            List /*<AbstractDependencyUpdate>*/ dependenciesToUpdateToNewlyBuiltVersion,
            String mavenGroupId,
            String mavenArtifactId,
+           String mavenCurrentReleaseVersion,
            String mavenCurrentReleaseVersion) {
         this.script = script
         this.releaseMetaDataURL = releaseMetaDataURL
@@ -107,6 +104,7 @@ class Config implements Serializable {
         this.mavenGroupId = mavenGroupId
         this.mavenArtifactId = mavenArtifactId
         this.mavenCurrentReleaseVersion = mavenCurrentReleaseVersion
+        this.currentReleaseCommitHash = currentReleaseCommitHash
     }
   	
 }

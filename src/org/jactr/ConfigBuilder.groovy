@@ -86,6 +86,15 @@ public class ConfigBuilder implements Serializable {
      * @see #build()
      */
     private String mavenCurrentReleaseVersion = null
+    
+    /**
+     * The commit hash extracted from the last released version obtained from {@link #releaseMetaDataURL} before
+     * the configuration is build.
+     *
+     * @see #parseMavenMetadata()
+     * @see #build()
+     */
+    private String currentReleaseCommitHash = null
 
     /**
      * Create a builder and supply the required configuration information to build
@@ -210,7 +219,8 @@ public class ConfigBuilder implements Serializable {
             this.dependenciesToUpdateToNewlyBuiltVersion,
             this.mavenGroupId,
             this.mavenArtifactId,
-            this.mavenCurrentReleaseVersion)
+            this.mavenCurrentReleaseVersion,
+            this.currentReleaseCommitHash)
         return config
     }
 	
@@ -238,6 +248,11 @@ public class ConfigBuilder implements Serializable {
             this.mavenGroupId = script.readFile(groupIdFile).trim()
             this.mavenArtifactId = script.readFile(artifactIdFile).trim()
             this.mavenCurrentReleaseVersion = script.readFile(versionFile).trim()
+            String[] versionParts = this.mavenCurrentReleaseVersion.split('-')
+            if(versionParts.length != 2) {
+                throw new IllegalArgumentException("Last release version '"+this.mavenCurrentReleaseVersion+"' is not in format <major>.<minor>.<patch>-<commitHash>")
+            }
+            this.currentReleaseCommitHash = versionParts[1]
             script.sh 'rm '+mavenMetaDataFile
             script.sh 'rm '+groupIdFile
             script.sh 'rm '+artifactIdFile

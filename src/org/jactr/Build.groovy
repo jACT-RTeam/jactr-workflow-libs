@@ -23,7 +23,9 @@ def run(Config config) {
 		   }
 		   
 		   stage name: 'Set versions', concurrency: 1
-		   def newVersionForMaven = getNextVersion(config)
+		   def oneLineGitLogSinceCurrentRelease = getOneLineGitLogSinceCurrentRelease(config)
+		   def lastCommitHash = getLastCommitHash()
+		   def newVersionForMaven = getNextVersion(config, oneLineGitLogSinceCurrentRelease, lastCommitHash)
 		   def newVersionForEclipse = newVersionForMaven.replaceAll('-', '.')
 		   if(config.isTychoBuild) {
 			   maven('''-DnewVersion='''+newVersionForEclipse+''' \
@@ -154,6 +156,24 @@ def maven(String optionsAndGoals) {
          '''+optionsAndGoals
 }
 
+def getOneLineGitLogSinceCurrentRelease(Config config) {
+    def tmpDir=pwd tmp: true
+    def logFile = tmpDir+'/last-commits-one-line.txt'
+    sh 'git log --one-line '+config.currentReleaseCommitHash+'..HEAD > '+logFile
+    def oneLineGitLogSinceCurrentRelease = readFile logFile
+    sh 'rm '+logFile
+    return oneLineGitLogSinceCurrentRelease
+}
+
+def getLastCommitHash() {
+    def tmpDir=pwd tmp: true
+    def commitHashFile=tmpDir+'/last-commit-hash.txt'
+    sh 'git log --oneline --max-count=1 | cut --delimiter=" " --fields=1 >'+commitHashFile
+    def lastCommitHash = readFile(commitHashFile).trim()
+    sh 'rm '+commitHashFile
+    return lastCommitHash
+}
+
 /**
  * Auto-assign a version number based on the last release published to the Maven repository. This
  * method shall be used to set version numbers via {@link Config#setNewVersion(String)}. By using this
@@ -174,28 +194,16 @@ def maven(String optionsAndGoals) {
  * ({@code <majorPart>.<minorPart>.<patchPart>-<qualifier>}) but not to the format used by Eclipse
  * ({@code <majorPart>.<minorPart>.<patchPart>.<qualifier>}).
  */
-def getNextVersion(Config config) {
+def getNextVersion(Config config, String oneLineGitLogSinceCurrentRelease, String lastCommitHash) {
 	def tmpDir=pwd tmp: true
-
-    // Determine last commit message
-    def commitFile=tmpDir+'/last-commit-message.txt'
-    sh 'git log --max-count=1 > '+commitFile
-    def lastCommitMessage = readFile commitFile
-    sh 'rm '+commitFile
-    
-    // Determine last commit hash
-    def commitHashFile=tmpDir+'/last-commit-hash.txt'
-    sh 'git log --oneline --max-count=1 | cut --delimiter=" " --fields=1 >'+commitHashFile
-    def lastCommitHash = readFile(commitHashFile).trim()
-    sh 'rm '+commitHashFile
 	
 	// Create new version number
 	def newVersion = config.mavenCurrentReleaseVersion
 	def oldVersionWithoutQualifier = config.mavenCurrentReleaseVersion.split("-")[0]
 	String[] parts = oldVersionWithoutQualifier.split("\\.")
-	if(lastCommitMessage.contains("+majorVersion")) {
+	if(oneLineGitLogSinceCurrentRelease.contains("+majorVersion")) {
 		newVersion = (parts[0].toInteger()+1)+".0.0"
-	} else if(lastCommitMessage.contains("+minorVersion")) {
+	} else if(oneLineGitLogSinceCurrentRelease.contains("+minorVersion")) {
 		newVersion = parts[0]+"."+(parts[1].toInteger()+1)+".0"
 	} else {
 		newVersion = parts[0]+"."+parts[1]+"."+(parts[2].toInteger()+1)
