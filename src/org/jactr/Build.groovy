@@ -159,7 +159,7 @@ def maven(String optionsAndGoals) {
 def getOneLineGitLogSinceCurrentRelease(Config config) {
     def tmpDir=pwd tmp: true
     def logFile = tmpDir+'/last-commits-one-line.txt'
-    sh 'git log --one-line '+config.currentReleaseCommitHash+'..HEAD > '+logFile
+    sh 'git log --oneline '+config.currentReleaseCommitHash+'..HEAD > '+logFile
     def oneLineGitLogSinceCurrentRelease = readFile logFile
     sh 'rm '+logFile
     return oneLineGitLogSinceCurrentRelease
