@@ -91,7 +91,7 @@ class Config implements Serializable {
            String mavenGroupId,
            String mavenArtifactId,
            String mavenCurrentReleaseVersion,
-           String mavenCurrentReleaseVersion) {
+           String currentReleaseCommitHash) {
         this.script = script
         this.releaseMetaDataURL = releaseMetaDataURL
         this.propertyForEclipseVersion = propertyForEclipseVersion
