@@ -79,6 +79,7 @@ def run(Config config) {
 	       				 -DskipITs=true \
 	       				 site-deploy''')
 	     	}
+	     	pushNewVersionNumberToGit(config, "*", newVersionForMaven)
 	     	
             stage name:"Update dependencies", concurrency: 1
             // Update dependent projects
@@ -143,7 +144,7 @@ def checkout(Config config) {
         gitTool: 'Default',
         submoduleCfg: [],
         userRemoteConfigs:
-            configCredentialsID != null 
+            config.credentialsID != null 
                 ? [[url: config.gitRepoURL, credentialsId: config.credentialsID]]
                 : [[url: config.gitRepoURL]]
             ])
@@ -151,6 +152,32 @@ def checkout(Config config) {
           && git checkout master
           && git merge --commit --no-edit temp
           && git branch -d temp'''
+}
+
+def pushNewVersionNumberToGit(Config config, String patternOfFilesContainingTheVersionNumber, String newVersion) {
+    gitPush(config, patternOfFilesContainingTheVersionNumber, 'Release version '+newVersion)
+}
+
+private void gitPush(Config config, String patternOfFilesToAdd, String commitMessage) {
+    // See git man page for the git store credential for information on the file format.
+    // https://git-scm.com/docs/git-credential-store
+    withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: config.credentialsID, usernameVariable: 'GIT_REPO_USER', passwordVariable: 'GIT_REPO_PASSWORD'],
+                     [$class: 'FileBinding', credentialsId: config.credentialsID+'.credentialsFile', variable: 'GIT_CREDENTIALS_FILE']]) {
+        try {
+            sh """git config --local user.name 'Jenkins Monochromata' \
+                && git config --local user.email 'info@monochromata.de' \
+                && git config --local credential.username '"""+env.GIT_REPO_USER+"""' \
+                && git config --local credential.helper 'store --file="""+env.GIT_CREDENTIALS_FILE+"""' \
+                && git config --local push.default 'matching' \
+                && git add """+patternOfFilesToAdd+""" \
+                && git commit -m '"""+commitMessage+"""' \
+                && git push"""
+        } finally {
+            sh """git config --local --remove-section user; \
+                git config --local --remove-section credential; \
+                git config --local --remove-section push"""
+        }
+    }
 }
 
 def maven(int displayNumber, String optionsAndGoals) {
