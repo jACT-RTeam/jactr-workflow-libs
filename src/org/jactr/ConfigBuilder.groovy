@@ -57,11 +57,9 @@ public class ConfigBuilder implements Serializable {
     private Integer displayNumber = 0
     
     /**
-     * If set, the jobs named in this list will be triggered if the configured job completes successfully.
-     * Triggering will include job parameters to have these jobs update their dependencies to cover the new
-     * version created by the configured job. Defaults to {@code null}.
+     * If set, other jobs may trigger this job to update a dependency in this job. Defaults to {@code null}.
      */
-    private List /*<AbstractDependencyUpdate>*/ dependenciesToUpdateToNewlyBuiltVersion = new java.util.ArrayList()
+    private Object dependencyUpdate = null
     
     /**
      * The Maven groupId obtained from {@link #releaseMetaDataURL} before the configuration is build.
@@ -114,6 +112,26 @@ public class ConfigBuilder implements Serializable {
         this.releaseMetaDataURL = releaseMetaDataURL
         this.gitRepoURL = gitRepoURL
     }
+    
+    /**
+     * Create a builder and supply the required configuration information to build
+     * from a public Git repository.
+     * 
+     * @param script             The script in which the builder is used.
+     * @param releaseMetaDataURL A URL referring to a maven-metadata.xml file of a Maven repository
+     *                           that each successful build using the configured job deploys to. The meta-data
+     *                           will be used to obtain the last version number in order to increment it when
+     *                           starting a new build (see {@link Build#getNextVersion()}).
+     * @param gitRepoURL A URL referring to the Git repository that will be checked out to base the build on.
+     * @param dependencyUpdate configures how to update the dependencies in this job
+     */
+    public ConfigBuilder(script,
+                         String releaseMetaDataURL,
+                         String gitRepoURL
+                         dependencyUpdate) {
+        this(script, releaseMetaDataURL, gitRepoURL)
+        this.dependencyUpdate = dependencyUpdate
+    }
 	
     /**
      * Configure a custom label to be used to choose the node to run the configured job on.
@@ -158,49 +176,6 @@ public class ConfigBuilder implements Serializable {
         this.displayNumber = displayNumber
         return this
     }
-    
-    /**
-     * Configures an update of an Eclipse plug-in project. The update will be performed
-     * if the configured job completes successfully.
-     */
-    public ConfigBuilder updateEclipseDependencyToNewlyBuiltVersion(
-            String gitRepoName,
-            String gitRepoURL,
-            String gitFileCredentialsId,
-            String pathToManifestMf) {
-        def dependencyUpdate = new EclipseDependencyUpdate(gitRepoName, gitRepoURL, gitFileCredentialsId, pathToManifestMf)
-        dependenciesToUpdateToNewlyBuiltVersion.add(dependencyUpdate)
-        return this
-    }
-
-    /**
-     * Configures an update of a dependency declaration in a Maven project. The update will be performed
-     * if the configured job completes successfully.
-     */
-    public ConfigBuilder updateMavenDependencyToNewlyBuiltVersion(
-            String gitRepoName,
-            String gitRepoURL,
-            String gitFileCredentialsId,
-            String pomPath = "pom.xml") {
-        def dependencyUpdate = new MavenDependencyUpdate(gitRepoName, gitRepoURL, gitFileCredentialsId, pomPath)
-        dependenciesToUpdateToNewlyBuiltVersion.add(dependencyUpdate)
-        return this
-    }
-    
-    /**
-     * Configures an update to a property in a Maven project. The update will be performed
-     * if the configured job completes successfully.
-     */
-    public ConfigBuilder updateMavenPropertyToNewlyBuiltVersion(
-            String gitRepoName,
-            String gitRepoURL,
-            String gitFileCredentialsId,
-            String pomPath = "pom.xml",
-            String propertyForDependency) {
-        def dependencyUpdate = new MavenPropertyUpdate(gitRepoName, gitRepoURL, gitFileCredentialsId, pomPath, propertyForDependency)
-        dependenciesToUpdateToNewlyBuiltVersion.add(dependencyUpdate)
-        return this
-    }
 
     /**
      * Create a new configuration from the information supplied to the builder.
@@ -216,7 +191,7 @@ public class ConfigBuilder implements Serializable {
             this.isTychoBuild,
             this.displayNumber,
             this.labelForJenkinsNode,
-            this.dependenciesToUpdateToNewlyBuiltVersion,
+            this.dependencyUpdate,
             this.mavenGroupId,
             this.mavenArtifactId,
             this.mavenCurrentReleaseVersion,

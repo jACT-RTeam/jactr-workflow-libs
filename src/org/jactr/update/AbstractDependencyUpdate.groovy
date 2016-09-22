@@ -6,21 +6,6 @@ package org.jactr.update;
  * This class is currently unused since Jenkins pipeline scripts do not support inheritance yet.
  */
 abstract class AbstractDependencyUpdate implements Serializable {
-
-    /**
-     * The name of the Git repository to update. 
-     */
-    public final String gitRepoName
-    
-    /**
-     * The URL of the Git repository to clone and update.
-     */
-    public final String gitRepoURL
-    
-    /**
-     * The ID of the file credentials that are used to authenticate to the Git repository.
-     */
-    public final String gitFileCredentialsId
     
     /**
      * A pattern to match the files in the Git repository to be checked out,
@@ -28,13 +13,7 @@ abstract class AbstractDependencyUpdate implements Serializable {
      */
     public final String modifiedFilesPattern
     
-    public AbstractDependencyUpdate(String gitRepoName,
-                            String gitRepoURL,
-                            String gitFileCredentialsId,
-                            String modifiedFilesPattern) {
-        this.gitRepoName = gitRepoName
-        this.gitRepoURL = gitRepoURL
-        this.gitFileCredentialsId = gitFileCredentialsId
+    public AbstractDependencyUpdate(String modifiedFilesPattern) {
         this.modifiedFilesPattern = modifiedFilesPattern
     }
     

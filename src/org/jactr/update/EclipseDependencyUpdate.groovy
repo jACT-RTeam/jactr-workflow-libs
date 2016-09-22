@@ -4,21 +4,6 @@ package org.jactr.update;
  * Updates a dependency in a {@code META-INF/MANIFEST.MF} file.
  */
 public class EclipseDependencyUpdate /* extends AbstractDependencyUpdate */ implements Serializable {
-
-    /**
-     * The name of the Git repository to update. 
-     */
-    public final String gitRepoName
-    
-    /**
-     * The URL of the Git repository to clone and update.
-     */
-    public final String gitRepoURL
-    
-    /**
-     * The ID of the file credentials that are used to authenticate to the Git repository.
-     */
-    public final String gitFileCredentialsId
     
     /**
      * A pattern to match the files in the Git repository to be checked out,
@@ -33,13 +18,7 @@ public class EclipseDependencyUpdate /* extends AbstractDependencyUpdate */ impl
      */
     public final String pathToManifestMf
     
-    public EclipseDependencyUpdate(String gitRepoName,
-                            String gitRepoURL,
-                            String gitFileCredentialsId,
-                            String pathToManifestMf) {
-        this.gitRepoName = gitRepoName
-        this.gitRepoURL = gitRepoURL
-        this.gitFileCredentialsId = gitFileCredentialsId
+    public EclipseDependencyUpdate(String pathToManifestMf) {
         this.modifiedFilesPattern = pathToManifestMf
         this.pathToManifestMf = pathToManifestMf
     }
@@ -56,12 +35,12 @@ public class EclipseDependencyUpdate /* extends AbstractDependencyUpdate */ impl
                      --in-place \
                      --regexp-extended \
                        \'s/'''+dependencyToUpdateForEclipse+''';bundle-version="[^"]*"/'''+dependencyToUpdateForEclipse+''';bundle-version="'''+newVersionForEclipse+'''"/g\' \
-                     '''+tmpDir+'''/'''+gitRepoName+'''/'''+pathToManifestMf
+                     '''+pathToManifestMf
         script.sh '''sed \
                      --in-place \
                      --regexp-extended \
                        \'s/'''+dependencyToUpdateForEclipse+''';bundle-version="[^"]*"/'''+dependencyToUpdateForEclipse+''';bundle-version="'''+newVersionForEclipse+'''"/g\' \
-                     '''+tmpDir+'''/'''+gitRepoName+'''/'''+pathToManifestMf
+                     '''+pathToManifestMf
     }
 
 }

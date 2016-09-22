@@ -18,6 +18,37 @@ def run(Config config) {
 		   stage name: 'Checkout', concurrency: 1
 		   checkout(config)
 		   
+           stage name:"Update dependencies", concurrency: 1
+           // Update dependency version. The properties dependencyToUpdate and newDependencyVersion
+           // are job parameters.
+           if(dependencyToUpdate) {
+                def dependencyToUpdateForMaven=dependencyToUpdate
+                def dependencyGA=dependency.split(':')
+                def dependencyMavenGroupId=dependencyGA[0]
+                def dependencyMavenArtifactId=dependencyGA[1]
+                def dependencyToUpdateForEclipse=dependencyMavenGroupId
+                if(!dependencyToUpdateForEclipse.endsWith(dependencyMavenArtifactId)) {
+                     dependencyToUpdateForEclipse += "."+dependencyMavenArtifactId
+                }
+                def newDependencyVersionForMaven = newDependencyVersion
+                def newDependencyVersionForMaven = newDependencyVersion.replaceAll('-', '.')
+                // See git man page for the git store credential for information on the file format.
+                // https://git-scm.com/docs/git-credential-store
+                withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: config.gitCredentialsId, usernameVariable: 'GIT_REPO_USER', passwordVariable: 'GIT_REPO_PASSWORD'],
+                                 [$class: 'FileBinding', credentialsId: config.gitCredentialsId+'File', variable: 'GIT_CREDENTIALS_FILE']]) {
+                            
+                    // Update version in the dependency declaration
+                    config.dependencyUpdate.updateDependency(config.script,
+                        dependencyToUpdateForMaven, newDependencyVersionForMaven,
+                        dependencyToUpdateForEclipse, newDependencyVersionForEclipse)
+                        
+                    // Push the change
+                    gitPush(config, config.dependencyUpdate.modifiedFilesPattern,
+                        'Bump version of dependency '+dependencyToUpdateForMaven+' to '+newVersionForMaven+' in '+config.dependencyUpdate.modifiedFilesPattern)
+                }
+           }
+		   
+		   
 		   stage name: 'Set versions', concurrency: 1
 		   def oneLineGitLogSinceCurrentRelease = getOneLineGitLogSinceCurrentRelease(config)
 		   def lastCommitHash = getLastCommitHash()
@@ -81,53 +112,6 @@ def run(Config config) {
 	     	}
 	     	pushNewVersionNumberToGit(config, "*", newVersionForMaven)
 	     	
-            stage name:"Update dependencies", concurrency: 1
-            // Update dependent projects
-            def dependencyToUpdateForMaven=config.mavenGroupId+':'+config.mavenArtifactId
-            def dependencyToUpdateForEclipse=config.mavenGroupId
-            if(!dependencyToUpdateForEclipse.endsWith(config.mavenArtifactId)) {
-                 dependencyToUpdateForEclipse += "."+config.mavenArtifactId
-            }
-            for(dependencyUpdate in config.dependenciesToUpdateToNewlyBuiltVersion) {
-                // See git man page for the git store credential for information on the file format.
-                // https://git-scm.com/docs/git-credential-store
-                withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'gitlab.credentials', usernameVariable: 'GIT_REPO_USER', passwordVariable: 'GIT_REPO_PASSWORD'],
-                                 [$class: 'FileBinding', credentialsId: dependencyUpdate.gitFileCredentialsId, variable: 'GIT_CREDENTIALS_FILE']]) {
-                    // Ensure the repository has been cloned, checkout the file to be modified
-                    sh """cd """+tmpDir+""" \
-                            && if [ ! -e """+dependencyUpdate.gitRepoName+""" ]; then 
-                                git clone \
-                                    --no-checkout \
-                                    --depth 1 \
-                                    --config user.name='jenkins.monochromata.de' \
-                                    --config credential.username='"""+env.GIT_REPO_USER+"""' \
-                                    --config credential.helper='store --file="""+env.GIT_CREDENTIALS_FILE+"""' \
-                                    --config push.default='matching' \
-                                    """+dependencyUpdate.gitRepoURL+""" \
-                                && cd """+dependencyUpdate.gitRepoName+""";
-                            else 
-                                cd """+dependencyUpdate.gitRepoName+""" \
-                                && git config --local --add credential.username '"""+env.GIT_REPO_USER+"""' \
-                                && git config --local --add credential.helper 'store --file="""+env.GIT_CREDENTIALS_FILE+"""' \
-                                && git pull;
-                            fi \
-                            && git reset HEAD \
-                            && git checkout HEAD """+dependencyUpdate.modifiedFilesPattern
-                            
-                    // Update version in the dependency declaration
-                    dependencyUpdate.updateDependency(config.script,
-                        dependencyToUpdateForMaven, newVersionForMaven,
-                        dependencyToUpdateForEclipse, newVersionForEclipse)
-                        
-                    // Push the change
-                    sh '''cd '''+tmpDir+'''/'''+dependencyUpdate.gitRepoName+''' \
-                          && git diff '''+dependencyUpdate.modifiedFilesPattern+''' \
-                          && git add '''+dependencyUpdate.modifiedFilesPattern+''' \
-                          && git commit -m "Bump version of dependency '''+dependencyToUpdateForMaven+''' to '''+newVersionForMaven+''' in '''+dependencyUpdate.modifiedFilesPattern+'''" \
-                          && git push \
-                          && git config --local --remove-section credential'''
-                }
-            }
 	    }
 	}
 }
@@ -161,8 +145,8 @@ def pushNewVersionNumberToGit(Config config, String patternOfFilesContainingTheV
 private void gitPush(Config config, String patternOfFilesToAdd, String commitMessage) {
     // See git man page for the git store credential for information on the file format.
     // https://git-scm.com/docs/git-credential-store
-    withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: config.credentialsID, usernameVariable: 'GIT_REPO_USER', passwordVariable: 'GIT_REPO_PASSWORD'],
-                     [$class: 'FileBinding', credentialsId: config.credentialsID+'.credentialsFile', variable: 'GIT_CREDENTIALS_FILE']]) {
+    withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: config.gitCredentialsId, usernameVariable: 'GIT_REPO_USER', passwordVariable: 'GIT_REPO_PASSWORD'],
+                     [$class: 'FileBinding', credentialsId: config.gitCredentialsId+'File', variable: 'GIT_CREDENTIALS_FILE']]) {
         try {
             sh """git config --local user.name 'Jenkins Monochromata' \
                 && git config --local user.email 'info@monochromata.de' \

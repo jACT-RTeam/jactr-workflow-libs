@@ -4,21 +4,6 @@ package org.jactr.update;
  * Updates a property in a Maven POM file that specifies a version of a dependency.
  */
 public class MavenPropertyUpdate /* extends AbstractDependencyUpdate */ implements Serializable  {
-
-    /**
-     * The name of the Git repository to update. 
-     */
-    public final String gitRepoName
-    
-    /**
-     * The URL of the Git repository to clone and update.
-     */
-    public final String gitRepoURL
-    
-    /**
-     * The ID of the file credentials that are used to authenticate to the Git repository.
-     */
-    public final String gitFileCredentialsId
     
     /**
      * A pattern to match the files in the Git repository to be checked out,
@@ -37,14 +22,8 @@ public class MavenPropertyUpdate /* extends AbstractDependencyUpdate */ implemen
      */
     public final String propertyForDependency
     
-    public MavenPropertyUpdate(String gitRepoName,
-                            String gitRepoURL,
-                            String gitFileCredentialsId,
-                            String pomPath,
+    public MavenPropertyUpdate(String pomPath,
                             String propertyForDependency) {
-        this.gitRepoName = gitRepoName
-        this.gitRepoURL = gitRepoURL
-        this.gitFileCredentialsId = gitFileCredentialsId
         this.modifiedFilesPattern = pomPath
         this.pomPath = pomPath
         this.propertyForDependency = propertyForDependency
@@ -61,7 +40,7 @@ public class MavenPropertyUpdate /* extends AbstractDependencyUpdate */ implemen
         script.sh '''mvn \
                  --errors \
                  --settings $PATH_TO_SETTINGS_XML \
-                 --file '''+tmpDir+'''/'''+gitRepoName+'''/'''+pomPath+''' \
+                 --file '''+pomPath+''' \
                  -Dproperty='''+propertyForDependency+''' \
                  -DnewVersion='''+newVersionForMaven+''' \
                  versions:update-property'''
