@@ -16,11 +16,7 @@ def run(Config config) {
            def tmpDir=pwd tmp: true
 	   					
 		   stage name: 'Checkout', concurrency: 1
-		   if(config.gitCredentialsId) {
-		   		git url: config.gitRepoURL, credentialsId: config.gitCredentialsId
-		   } else {
-		   		git url: config.gitRepoURL
-		   }
+		   checkout(config)
 		   
 		   stage name: 'Set versions', concurrency: 1
 		   def oneLineGitLogSinceCurrentRelease = getOneLineGitLogSinceCurrentRelease(config)
@@ -133,6 +129,28 @@ def run(Config config) {
             }
 	    }
 	}
+}
+
+def checkout(Config config) {
+    // Use a more complex configuration instead of
+    // git url: config.gitRepoURL, credentialsId: config.credentialsID
+    // to be able to exclude Jenkins jobs from triggering themselves. This leaves the Git repository in detached head
+    // state which needs to be overcome using git checkout master before proceeding.
+    checkout([$class: 'GitSCM',
+        branches: [[name: 'refs/heads/master']],
+        doGenerateSubmoduleConfigurations: false,
+        extensions: [[$class: 'UserExclusion', excludedUsers: 'Jenkins Monochromata']],
+        gitTool: 'Default',
+        submoduleCfg: [],
+        userRemoteConfigs:
+            configCredentialsID != null 
+                ? [[url: config.gitRepoURL, credentialsId: config.credentialsID]]
+                : [[url: config.gitRepoURL]]
+            ])
+    sh '''git branch -f temp
+          && git checkout master
+          && git merge --commit --no-edit temp
+          && git branch -d temp'''
 }
 
 def maven(int displayNumber, String optionsAndGoals) {
