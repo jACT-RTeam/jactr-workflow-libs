@@ -148,9 +148,9 @@ def checkout(Config config) {
                 ? [[url: config.gitRepoURL, credentialsId: config.gitCredentialsId]]
                 : [[url: config.gitRepoURL]]
             ])
-    sh '''git branch -f temp
-          && git checkout master
-          && git merge --commit --no-edit temp
+    sh '''git branch -f temp \
+          && git checkout master \
+          && git merge --commit --no-edit temp \
           && git branch -d temp'''
 }
 
