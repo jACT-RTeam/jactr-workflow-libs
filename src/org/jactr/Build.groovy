@@ -15,7 +15,7 @@ def run(Config config) {
 	   					
            def tmpDir=pwd tmp: true
 	   					
-		   stage 'Checkout'
+		   stage name: 'Checkout', concurrency: 1
 		   if(config.gitCredentialsId) {
 		   		git url: config.gitRepoURL, credentialsId: config.gitCredentialsId
 		   } else {
