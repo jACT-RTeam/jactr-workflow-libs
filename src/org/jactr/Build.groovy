@@ -144,8 +144,8 @@ def checkout(Config config) {
         gitTool: 'Default',
         submoduleCfg: [],
         userRemoteConfigs:
-            config.credentialsID != null 
-                ? [[url: config.gitRepoURL, credentialsId: config.credentialsID]]
+            config.gitCredentialsID != null 
+                ? [[url: config.gitRepoURL, credentialsId: config.gitCredentialsID]]
                 : [[url: config.gitRepoURL]]
             ])
     sh '''git branch -f temp
