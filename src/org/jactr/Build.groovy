@@ -113,7 +113,10 @@ def run(Config config) {
 	     	
 	     	stage name: "Trigger dependent jobs", concurrency: 1
 	     	for(String jobToTrigger in config.jobsToTrigger) {
-	     	     echo 'TODO: trigger job '+jobToTrigger
+	     	     build job: jobToTrigger,
+	     	           parameters: [string(name: 'dependencyToUpdate', value: config.mavenGroupId+':'+config.mavenArtifactId),
+	     	                        string(name: 'newDependencyVersion', value: newVersionForMaven)],
+                       wait: false
 	     	}
 	    }
 	}
