@@ -48,7 +48,6 @@ def run(Config config) {
                 }
            }
 		   
-		   
 		   stage name: 'Set versions', concurrency: 1
 		   def oneLineGitLogSinceCurrentRelease = getOneLineGitLogSinceCurrentRelease(config)
 		   def lastCommitHash = getLastCommitHash()
@@ -112,6 +111,10 @@ def run(Config config) {
 	     	}
 	     	pushNewVersionNumberToGit(config, "*", newVersionForMaven)
 	     	
+	     	stage name: "Trigger dependent jobs", concurrency: 1
+	     	for(String jobToTrigger in config.jobsToTrigger) {
+	     	     echo 'TODO: trigger job '+jobToTrigger
+	     	}
 	    }
 	}
 }

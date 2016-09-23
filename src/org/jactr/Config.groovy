@@ -57,6 +57,11 @@ class Config implements Serializable {
     def dependencyUpdate
     
     /**
+     * The names of jobs to be triggered when the configured job completed.
+     */
+    public final List<String> jobsToTrigger
+    
+    /**
      * The Maven groupId of the current release.
      */
     public final String mavenGroupId
@@ -88,6 +93,7 @@ class Config implements Serializable {
            Integer displayNumber,
            String labelForJenkinsNode,
            dependencyUpdate,
+           List<String> jobsToTrigger,
            String mavenGroupId,
            String mavenArtifactId,
            String mavenCurrentReleaseVersion,
@@ -101,6 +107,7 @@ class Config implements Serializable {
         this.displayNumber = displayNumber
         this.labelForJenkinsNode = labelForJenkinsNode
         this.dependencyUpdate = dependencyUpdate
+        this.jobsToTrigger = jobsToTrigger
         this.mavenGroupId = mavenGroupId
         this.mavenArtifactId = mavenArtifactId
         this.mavenCurrentReleaseVersion = mavenCurrentReleaseVersion

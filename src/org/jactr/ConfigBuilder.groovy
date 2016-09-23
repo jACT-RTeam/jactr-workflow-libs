@@ -62,6 +62,11 @@ public class ConfigBuilder implements Serializable {
     private Object dependencyUpdate = null
     
     /**
+     * The names of jobs to be triggered by the configured job.
+     */
+    private List<String> jobsToTrigger = new ArrayList<String>()
+    
+    /**
      * The Maven groupId obtained from {@link #releaseMetaDataURL} before the configuration is build.
      *
      * @see #parseMavenMetadata()
@@ -127,7 +132,7 @@ public class ConfigBuilder implements Serializable {
      */
     public ConfigBuilder(script,
                          String releaseMetaDataURL,
-                         String gitRepoURL
+                         String gitRepoURL,
                          dependencyUpdate) {
         this(script, releaseMetaDataURL, gitRepoURL)
         this.dependencyUpdate = dependencyUpdate
@@ -176,6 +181,14 @@ public class ConfigBuilder implements Serializable {
         this.displayNumber = displayNumber
         return this
     }
+    
+    /**
+     * Add the given job name to the list of jobs to be triggered after the configured job completed.
+     */
+    public ConfigBuilder triggerJob(String jobName) {
+        this.jobsToTrigger.add(jobName)
+        return this
+    }
 
     /**
      * Create a new configuration from the information supplied to the builder.
@@ -192,6 +205,7 @@ public class ConfigBuilder implements Serializable {
             this.displayNumber,
             this.labelForJenkinsNode,
             this.dependencyUpdate,
+            this.jobsToTrigger,
             this.mavenGroupId,
             this.mavenArtifactId,
             this.mavenCurrentReleaseVersion,
