@@ -23,7 +23,7 @@ def run(Config config) {
            // are job parameters.
            if(config.script.dependencyToUpdate) {
                 def dependencyToUpdateForMaven=dependencyToUpdate
-                def dependencyGA=dependency.split(':')
+                def dependencyGA=dependencyToUpdate.split(':')
                 def dependencyMavenGroupId=dependencyGA[0]
                 def dependencyMavenArtifactId=dependencyGA[1]
                 def dependencyToUpdateForEclipse=dependencyMavenGroupId
