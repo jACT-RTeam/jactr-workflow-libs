@@ -21,7 +21,7 @@ def run(Config config) {
            stage name:"Update dependencies", concurrency: 1
            // Update dependency version. The properties dependencyToUpdate and newDependencyVersion
            // are job parameters.
-           if(dependencyToUpdate) {
+           if(config.script.dependencyToUpdate) {
                 def dependencyToUpdateForMaven=dependencyToUpdate
                 def dependencyGA=dependency.split(':')
                 def dependencyMavenGroupId=dependencyGA[0]
@@ -30,8 +30,8 @@ def run(Config config) {
                 if(!dependencyToUpdateForEclipse.endsWith(dependencyMavenArtifactId)) {
                      dependencyToUpdateForEclipse += "."+dependencyMavenArtifactId
                 }
-                def newDependencyVersionForMaven = newDependencyVersion
-                def newDependencyVersionForEclipse = newDependencyVersion.replaceAll('-', '.')
+                def newDependencyVersionForMaven = config.script.newDependencyVersion
+                def newDependencyVersionForEclipse = config.script.newDependencyVersion.replaceAll('-', '.')
                 // See git man page for the git store credential for information on the file format.
                 // https://git-scm.com/docs/git-credential-store
                 withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: config.gitCredentialsId, usernameVariable: 'GIT_REPO_USER', passwordVariable: 'GIT_REPO_PASSWORD'],
