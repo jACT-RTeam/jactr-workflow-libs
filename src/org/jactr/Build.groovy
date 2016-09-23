@@ -44,7 +44,7 @@ def run(Config config) {
                         
                     // Push the change
                     gitPush(config, config.dependencyUpdate.modifiedFilesPattern,
-                        'Bump version of dependency '+dependencyToUpdateForMaven+' to '+newVersionForMaven+' in '+config.dependencyUpdate.modifiedFilesPattern)
+                        'Bump version of dependency '+dependencyToUpdateForMaven+' to '+newDependencyVersionForMaven+' in '+config.dependencyUpdate.modifiedFilesPattern)
                 }
            }
 		   
