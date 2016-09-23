@@ -31,7 +31,7 @@ def run(Config config) {
                      dependencyToUpdateForEclipse += "."+dependencyMavenArtifactId
                 }
                 def newDependencyVersionForMaven = newDependencyVersion
-                def newDependencyVersionForMaven = newDependencyVersion.replaceAll('-', '.')
+                def newDependencyVersionForEclipse = newDependencyVersion.replaceAll('-', '.')
                 // See git man page for the git store credential for information on the file format.
                 // https://git-scm.com/docs/git-credential-store
                 withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: config.gitCredentialsId, usernameVariable: 'GIT_REPO_USER', passwordVariable: 'GIT_REPO_PASSWORD'],
