@@ -2,6 +2,9 @@ package org.jactr.update;
 
 /**
  * Updates a property in a Maven POM file that specifies a version of a dependency.
+ * The names of the properties to be updated are equal to {@code <mavenGroupId>.<mavenArtifactId>}
+ * where {@code <mavenGroupId>} and {@code <mavenArtifactId>} identify the dependency whose version
+ * is to be set in the respective property.
  */
 public class MavenPropertyUpdate /* extends AbstractDependencyUpdate */ implements Serializable  {
     
@@ -17,16 +20,16 @@ public class MavenPropertyUpdate /* extends AbstractDependencyUpdate */ implemen
     public final String pomPath
     
     /**
-     * A property name used in the POM referenced by {@link #pomPath} to specify a dependency on
-     * the project build by the configuration to which this update is added.
+     * Create a new property update to update Maven properties for dependencies in the POM file whose path
+     * is given.
+     * <p> 
+     * The names of the properties to be updated are equal to {@code <mavenGroupId>.<mavenArtifactId>}
+     * where {@code <mavenGroupId>} and {@code <mavenArtifactId>} identify the dependency whose version
+     * is to be set in the respective property.
      */
-    public final String propertyForDependency
-    
-    public MavenPropertyUpdate(String pomPath,
-                            String propertyForDependency) {
+    public MavenPropertyUpdate(String pomPath) {
         this.modifiedFilesPattern = pomPath
         this.pomPath = pomPath
-        this.propertyForDependency = propertyForDependency
     }
     
     /**
@@ -37,6 +40,7 @@ public class MavenPropertyUpdate /* extends AbstractDependencyUpdate */ implemen
                                  dependencyToUpdateForMaven, newVersionForMaven,
                                  dependencyToUpdateForEclipse, newVersionForEclipse) {
         def tmpDir=script.pwd tmp: true
+        def propertyForDependency = dependencyToUpdateForMaven.replace(':', '.')
         script.sh '''mvn \
                  --errors \
                  --settings $PATH_TO_SETTINGS_XML \
