@@ -2,9 +2,10 @@ package org.jactr.update;
 
 /**
  * Updates a property in a Maven POM file that specifies a version of a dependency.
- * The names of the properties to be updated are equal to {@code <mavenGroupId>.<mavenArtifactId>.version}
- * where {@code <mavenGroupId>} and {@code <mavenArtifactId>} identify the dependency whose version
- * is to be set in the respective property.
+ * The names of the properties to be updated are equal to {@code <mavenGroupId>.version}
+ * where {@code <mavenGroupId>} is part of the Maven GAV of the dependency whose version
+ * is to be set in the respective property. (It is assumed that all artifacts in a Maven
+ * group are built in a multi-module project and hence share the same version number).
  */
 public class MavenPropertyUpdate /* extends AbstractDependencyUpdate */ implements Serializable  {
     
@@ -23,9 +24,10 @@ public class MavenPropertyUpdate /* extends AbstractDependencyUpdate */ implemen
      * Create a new property update to update Maven properties for dependencies in the POM file whose path
      * is given.
      * <p> 
-     * The names of the properties to be updated are equal to {@code <mavenGroupId>.<mavenArtifactId>.version}
-     * where {@code <mavenGroupId>} and {@code <mavenArtifactId>} identify the dependency whose version
-     * is to be set in the respective property.
+     * The names of the properties to be updated are equal to {@code <mavenGroupId>.version}
+     * where {@code <mavenGroupId>} is part of the Maven GAV of the dependency whose version
+     * is to be set in the respective property. (It is assumed that all artifacts in a Maven
+     * group are built in a multi-module project and hence share the same version number).
      */
     public MavenPropertyUpdate(String pomPath) {
         this.modifiedFilesPattern = pomPath
@@ -40,7 +42,7 @@ public class MavenPropertyUpdate /* extends AbstractDependencyUpdate */ implemen
                                  dependencyToUpdateForMaven, newVersionForMaven,
                                  dependencyToUpdateForEclipse, newVersionForEclipse) {
         def tmpDir=script.pwd tmp: true
-        def propertyForDependency = dependencyToUpdateForMaven.replace(':', '.')+'.version'
+        def propertyForDependency = dependencyToUpdateForMaven.split(':')[0]+'.version'
         script.sh '''mvn \
                  --errors \
                  --settings $PATH_TO_SETTINGS_XML \
