@@ -2,7 +2,7 @@ package org.jactr.update;
 
 /**
  * Updates a property in a Maven POM file that specifies a version of a dependency.
- * The names of the properties to be updated are equal to {@code <mavenGroupId>.<mavenArtifactId>}
+ * The names of the properties to be updated are equal to {@code <mavenGroupId>.<mavenArtifactId>.version}
  * where {@code <mavenGroupId>} and {@code <mavenArtifactId>} identify the dependency whose version
  * is to be set in the respective property.
  */
@@ -23,7 +23,7 @@ public class MavenPropertyUpdate /* extends AbstractDependencyUpdate */ implemen
      * Create a new property update to update Maven properties for dependencies in the POM file whose path
      * is given.
      * <p> 
-     * The names of the properties to be updated are equal to {@code <mavenGroupId>.<mavenArtifactId>}
+     * The names of the properties to be updated are equal to {@code <mavenGroupId>.<mavenArtifactId>.version}
      * where {@code <mavenGroupId>} and {@code <mavenArtifactId>} identify the dependency whose version
      * is to be set in the respective property.
      */
@@ -40,7 +40,7 @@ public class MavenPropertyUpdate /* extends AbstractDependencyUpdate */ implemen
                                  dependencyToUpdateForMaven, newVersionForMaven,
                                  dependencyToUpdateForEclipse, newVersionForEclipse) {
         def tmpDir=script.pwd tmp: true
-        def propertyForDependency = dependencyToUpdateForMaven.replace(':', '.')
+        def propertyForDependency = dependencyToUpdateForMaven.replace(':', '.')+'.version'
         script.sh '''mvn \
                  --errors \
                  --settings $PATH_TO_SETTINGS_XML \
