@@ -241,7 +241,8 @@ def getNextVersion(Config config, String currentReleaseVersion, String oneLineGi
 	
 	// Create new version number
 	def newVersion = currentReleaseVersion
-	String[] parts = currentReleaseVersion.split("\\.")
+	// The first split removes an optional -<commitHash> as per the old versioning scheme.
+	String[] parts = currentReleaseVersion.split("\\-")[0].split("\\.")
 	if(oneLineGitLogSinceCurrentRelease.contains("+majorVersion")) {
 		newVersion = (parts[0].toInteger()+1)+".0.0"
 	} else if(oneLineGitLogSinceCurrentRelease.contains("+minorVersion")) {
