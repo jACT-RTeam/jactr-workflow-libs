@@ -302,19 +302,21 @@ public class ConfigBuilder implements Serializable {
     }
 
     private void installToolsIfNecessary() {
-        // Retry is necessary because downloads via apt-get are unreliable
-        script.retry(3) {
-            script.sh '''echo "deb http://http.debian.net/debian jessie-backports main" > /etc/apt/sources.list.d/jessie-backports.list \
-                && apt-get update \
-                && apt-get remove --yes openjdk-7-jdk \
-                && apt-get install --yes openjdk-8-jre-headless openjdk-8-jdk \
-                && /usr/sbin/update-java-alternatives -s java-1.8.0-openjdk-amd64 \
-                && apt-get install --yes curl git maven libxml-xpath-perl \
-                && apt-get install --yes xvfb ratpoison \
-                && mkdir --parents /tmp/.X11-unix \
-                && chmod 1777 /tmp/.X11-unix \
-                && Xvfb -help \
-                && ratpoison --version'''
+        script.node(this.labelForJenkinsNode) {
+            // Retry is necessary because downloads via apt-get are unreliable
+            script.retry(3) {
+                script.sh '''echo "deb http://http.debian.net/debian jessie-backports main" > /etc/apt/sources.list.d/jessie-backports.list \
+                    && apt-get update \
+                    && apt-get remove --yes openjdk-7-jdk \
+                    && apt-get install --yes openjdk-8-jre-headless openjdk-8-jdk \
+                    && /usr/sbin/update-java-alternatives -s java-1.8.0-openjdk-amd64 \
+                    && apt-get install --yes curl git maven libxml-xpath-perl \
+                    && apt-get install --yes xvfb ratpoison \
+                    && mkdir --parents /tmp/.X11-unix \
+                    && chmod 1777 /tmp/.X11-unix \
+                    && Xvfb -help \
+                    && ratpoison --version'''
+            }
         }
     }
 }
