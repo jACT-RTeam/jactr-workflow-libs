@@ -240,7 +240,6 @@ public class ConfigBuilder implements Serializable {
         if(!this.versionNumberToIncrementInInitialBuild) {
             this.versionNumberToIncrementInInitialBuild = readVersionNumberToIncrementInInitialBuildFrom(pomPath)
         }
-        def currentReleaseAndItsCommitHash = findCurrentReleaseVersionAndItsCommitHash()
         def config = new org.jactr.Config(
             this.script,
             this.propertyForEclipseVersion,
@@ -253,8 +252,7 @@ public class ConfigBuilder implements Serializable {
             this.jobsToTrigger,
             this.mavenGroupId,
             this.mavenArtifactId,
-            currentReleaseAndItsCommitHash['version'],
-            currentReleaseAndItsCommitHash['commitHash'])
+            this.versionNumberToIncrementInInitialBuild)
         return config
     }
 	
@@ -278,26 +276,6 @@ public class ConfigBuilder implements Serializable {
             def element = script.readFile(elementFile).trim()
             script.sh 'rm '+elementFile
             return element
-        }
-    }
-    
-    private void findCurrentReleaseVersionAndItsCommitHash() {
-        script.node(this.labelForJenkinsNode) {
-            def tmpDir=script.pwd tmp:true
-            def gitLogFile=tmpDir+'/git.log'
-            script.sh '''git log --oneline --max-count=1 --grep "^Release version [\\.0-9a-f\\-]\\{1,\\}$" > '''+gitLogFile
-            def gitLog=script.readFile(gitLogFile).trim()
-            script.sh 'rm '+gitLogFile
-            if(gitLog) {
-                // Split e.g. "f44356b Release version 1.0.10-2de0bc4" or
-                //            "f44356b Release version 1.0.10" 
-                def commitHashAndReleaseMessage=gitLog.split(" ")
-                return [ version:    commitHashAndReleaseMessage[3],
-                         commitHash: commitHashAndReleaseMessage[0] ]
-            } else {
-                return [ version:    this.versionNumberToIncrementInInitialBuild,
-                         commitHash: null ]
-            } 
         }
     }
 

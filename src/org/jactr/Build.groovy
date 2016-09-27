@@ -48,8 +48,11 @@ def run(Config config) {
            }
 		   
 		   stage name: 'Set versions', concurrency: 1
-		   def oneLineGitLogSinceCurrentRelease = getOneLineGitLogSinceCurrentRelease(config)
-		   def newVersion = getNextVersion(config, oneLineGitLogSinceCurrentRelease)
+		   def currentReleaseAndItsCommitHash = getCurrentReleaseVersionAndItsCommitHash(config)
+		   def currentReleaseVersion = currentReleaseAndItsCommitHash['version']
+           def currentReleaseCommitHash = currentReleaseAndItsCommitHash['commitHash']
+		   def oneLineGitLogSinceCurrentRelease = getOneLineGitLogSinceCurrentRelease(config, currentReleaseCommitHash)
+		   def newVersion = getNextVersion(config, currentReleaseVersion, oneLineGitLogSinceCurrentRelease)
 		   if(config.isTychoBuild) {
 			   maven('''-DnewVersion='''+newVersion+''' \
 			   			-Dtycho.mode=maven \
@@ -188,11 +191,30 @@ def maven(String optionsAndGoals) {
          '''+optionsAndGoals
 }
 
-def getOneLineGitLogSinceCurrentRelease(Config config) {
+    
+def getCurrentReleaseVersionAndItsCommitHash(Config config) {
+    def tmpDir=pwd tmp:true
+    def gitLogFile=tmpDir+'/git.log'
+    sh '''git log --oneline --max-count=1 --grep "^Release version [\\.0-9a-f\\-]\\{1,\\}$" > '''+gitLogFile
+    def gitLog=readFile(gitLogFile).trim()
+    sh 'rm '+gitLogFile
+    if(gitLog) {
+        // Split e.g. "f44356b Release version 1.0.10-2de0bc4" or
+        //            "f44356b Release version 1.0.10" 
+        def commitHashAndReleaseMessage=gitLog.split(" ")
+        return [ version:    commitHashAndReleaseMessage[3],
+                 commitHash: commitHashAndReleaseMessage[0] ]
+    } else {
+        return [ version:    config.versionNumberToIncrementInInitialBuild,
+                 commitHash: null ]
+    } 
+}
+
+def getOneLineGitLogSinceCurrentRelease(Config config, String currentReleaseCommitHash) {
     def tmpDir=pwd tmp: true
     def logFile = tmpDir+'/last-commits-one-line.txt'
-    if(config.currentReleaseCommitHash) {
-        sh 'git log --oneline '+config.currentReleaseCommitHash+'..HEAD > '+logFile
+    if(currentReleaseCommitHash) {
+        sh 'git log --oneline '+currentReleaseCommitHash+'..HEAD > '+logFile
     } else {
         // There is no release yet, consider +majorVersion/+minorVersion in the entire git log.
         sh 'git log --oneline > '+logFile
@@ -214,13 +236,12 @@ def getOneLineGitLogSinceCurrentRelease(Config config) {
  *
  * <p>Note that the version numbers returned by this method comply to the format used by both Maven and Eclipse.
  */
-def getNextVersion(Config config, String oneLineGitLogSinceCurrentRelease) {
+def getNextVersion(Config config, String currentReleaseVersion, String oneLineGitLogSinceCurrentRelease) {
 	def tmpDir=pwd tmp: true
 	
 	// Create new version number
-	def newVersion = config.currentReleaseVersion
-	def oldVersionWithoutQualifier = config.currentReleaseVersion.split("-")[0]
-	String[] parts = oldVersionWithoutQualifier.split("\\.")
+	def newVersion = currentReleaseVersion
+	String[] parts = currentReleaseVersion.split("\\.")
 	if(oneLineGitLogSinceCurrentRelease.contains("+majorVersion")) {
 		newVersion = (parts[0].toInteger()+1)+".0.0"
 	} else if(oneLineGitLogSinceCurrentRelease.contains("+minorVersion")) {
@@ -229,7 +250,7 @@ def getNextVersion(Config config, String oneLineGitLogSinceCurrentRelease) {
 		newVersion = parts[0]+"."+parts[1]+"."+(parts[2].toInteger()+1)
 	}
 	
-	echo 'Updating version '+config.currentReleaseVersion+' -> '+newVersion
+	echo 'Updating version '+currentReleaseVersion+' -> '+newVersion
 	currentBuild.displayName = '#'+currentBuild.number+' v'+newVersion
 	return newVersion
 }

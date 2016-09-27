@@ -65,15 +65,7 @@ class Config implements Serializable {
      */
     public final String mavenArtifactId
     
-    /**
-     * The last released Maven version.
-     */
-    public final String currentReleaseVersion
-    
-    /**
-     * The commit hash of the last release commit, may be null.
-     */
-    public final String currentReleaseCommitHash
+    public final String versionNumberToIncrementInInitialBuild
 	
     /**
      * This constructor shall only be used by {@link ConfigBuilder}.
@@ -89,8 +81,7 @@ class Config implements Serializable {
            List<String> jobsToTrigger,
            String mavenGroupId,
            String mavenArtifactId,
-           String currentReleaseVersion,
-           String currentReleaseCommitHash) {
+           String versionNumberToIncrementInInitialBuild) {
         this.script = script
         this.propertyForEclipseVersion = propertyForEclipseVersion
         this.gitRepoURL = gitRepoURL
@@ -102,8 +93,7 @@ class Config implements Serializable {
         this.jobsToTrigger = jobsToTrigger
         this.mavenGroupId = mavenGroupId
         this.mavenArtifactId = mavenArtifactId
-        this.currentReleaseVersion = currentReleaseVersion
-        this.currentReleaseCommitHash = currentReleaseCommitHash
+        this.versionNumberToIncrementInInitialBuild = versionNumberToIncrementInInitialBuild
     }
   	
 }
