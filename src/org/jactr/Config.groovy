@@ -17,12 +17,6 @@ class Config implements Serializable {
     public final String labelForJenkinsNode
     
     /**
-     * The URL referring to a maven-metadata.xml file of a Maven repository that each successful build
-     * using this configuration deploys to.
-     */
-    public final String releaseMetaDataURL
-    
-    /**
      * The Maven property that will be set with the next version in Eclipse format.
      */
     public final String propertyForEclipseVersion
@@ -74,10 +68,10 @@ class Config implements Serializable {
     /**
      * The last released Maven version.
      */
-    public final String mavenCurrentReleaseVersion
+    public final String currentReleaseVersion
     
     /**
-     * The Git commit hash that is part of {@link #mavenCurrentReleaseVersion}. 
+     * The commit hash of the last release commit, may be null.
      */
     public final String currentReleaseCommitHash
 	
@@ -85,7 +79,6 @@ class Config implements Serializable {
      * This constructor shall only be used by {@link ConfigBuilder}.
      */
     public Config(script,
-           String releaseMetaDataURL,
            String propertyForEclipseVersion,
            String gitRepoURL,
            String gitCredentialsId,
@@ -96,10 +89,9 @@ class Config implements Serializable {
            List<String> jobsToTrigger,
            String mavenGroupId,
            String mavenArtifactId,
-           String mavenCurrentReleaseVersion,
+           String currentReleaseVersion,
            String currentReleaseCommitHash) {
         this.script = script
-        this.releaseMetaDataURL = releaseMetaDataURL
         this.propertyForEclipseVersion = propertyForEclipseVersion
         this.gitRepoURL = gitRepoURL
         this.gitCredentialsId = gitCredentialsId
@@ -110,7 +102,7 @@ class Config implements Serializable {
         this.jobsToTrigger = jobsToTrigger
         this.mavenGroupId = mavenGroupId
         this.mavenArtifactId = mavenArtifactId
-        this.mavenCurrentReleaseVersion = mavenCurrentReleaseVersion
+        this.currentReleaseVersion = currentReleaseVersion
         this.currentReleaseCommitHash = currentReleaseCommitHash
     }
   	

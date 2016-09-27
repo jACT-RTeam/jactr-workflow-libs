@@ -194,7 +194,12 @@ def maven(String optionsAndGoals) {
 def getOneLineGitLogSinceCurrentRelease(Config config) {
     def tmpDir=pwd tmp: true
     def logFile = tmpDir+'/last-commits-one-line.txt'
-    sh 'git log --oneline '+config.currentReleaseCommitHash+'..HEAD > '+logFile
+    if(config.currentReleaseCommitHash) {
+        sh 'git log --oneline '+config.currentReleaseCommitHash+'..HEAD > '+logFile
+    } else {
+        // There is no release yet, consider +majorVersion/+minorVersion in the entire git log.
+        sh 'git log --oneline > '+logFile
+    }
     def oneLineGitLogSinceCurrentRelease = readFile logFile
     sh 'rm '+logFile
     return oneLineGitLogSinceCurrentRelease
@@ -233,8 +238,8 @@ def getNextVersion(Config config, String oneLineGitLogSinceCurrentRelease, Strin
 	def tmpDir=pwd tmp: true
 	
 	// Create new version number
-	def newVersion = config.mavenCurrentReleaseVersion
-	def oldVersionWithoutQualifier = config.mavenCurrentReleaseVersion.split("-")[0]
+	def newVersion = config.currentReleaseVersion
+	def oldVersionWithoutQualifier = config.currentReleaseVersion.split("-")[0]
 	String[] parts = oldVersionWithoutQualifier.split("\\.")
 	if(oneLineGitLogSinceCurrentRelease.contains("+majorVersion")) {
 		newVersion = (parts[0].toInteger()+1)+".0.0"
@@ -250,7 +255,7 @@ def getNextVersion(Config config, String oneLineGitLogSinceCurrentRelease, Strin
 	//     Eclipse versions have the format /<major>.<minor>.<patch>.<qualifier>/ ,
 	// thus - needs to be replaced by . to create the latter out of the former.
 	newVersion += '-'+lastCommitHash
-	echo 'Updating version '+config.mavenCurrentReleaseVersion+' -> '+newVersion
+	echo 'Updating version '+config.currentReleaseVersion+' -> '+newVersion
 	currentBuild.displayName = '#'+currentBuild.number+' v'+newVersion
 	return newVersion
 }

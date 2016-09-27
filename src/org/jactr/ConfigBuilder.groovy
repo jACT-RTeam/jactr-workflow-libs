@@ -67,6 +67,13 @@ public class ConfigBuilder implements Serializable {
     private List<String> jobsToTrigger = new ArrayList<String>()
     
     /**
+     * An optional path to a {@code pom.xml} file from which {@link #mavenGroupId}, {@link #mavenArtifactId}
+     * and {@link #versionNumberToIncrementInInitialBuild} will be read if they have not been passed to the
+     * constructor.
+     */
+    private String pomPath = null
+    
+    /**
      * The Maven groupId obtained from {@link #releaseMetaDataURL} before the configuration is build.
      *
      * @see #parseMavenMetadata()
@@ -82,39 +89,27 @@ public class ConfigBuilder implements Serializable {
      */
     private String mavenArtifactId = null
     
-    /**
-     * The Maven last released version obtained from {@link #releaseMetaDataURL} before the configuration is build.
-     *
-     * @see #parseMavenMetadata()
-     * @see #build()
-     */
-    private String mavenCurrentReleaseVersion = null
-    
-    /**
-     * The commit hash extracted from the last released version obtained from {@link #releaseMetaDataURL} before
-     * the configuration is build.
-     *
-     * @see #parseMavenMetadata()
-     * @see #build()
-     */
-    private String currentReleaseCommitHash = null
+    private String versionNumberToIncrementInInitialBuild = null
 
     /**
      * Create a builder and supply the required configuration information to build
      * from a public Git repository.
      * 
-     * @param script             The script in which the builder is used.
-     * @param releaseMetaDataURL A URL referring to a maven-metadata.xml file of a Maven repository
-     *                           that each successful build using the configured job deploys to. The meta-data
-     *                           will be used to obtain the last version number in order to increment it when
-     *                           starting a new build (see {@link Build#getNextVersion()}).
-     * @param gitRepoURL A URL referring to the Git repository that will be checked out to base the build on.
+     * @param script                 The script in which the builder is used.
+     * @param mavenGroupId           The Maven groupId of the artifact built by the configured job.
+     * @param mavenArtifactId        The Maven artifactId of the artifact built by the configured job.
+     * @param versionNumberToIncrementInInitialBuild The version number to use be incremented during the initial build.
+     * @param gitRepoURL             A URL referring to the Git repository that will be checked out to base the build on.
      */
     public ConfigBuilder(script,
-                         String releaseMetaDataURL,
+                         String mavenGroupId,
+                         String mavenArtifactId,
+                         String versionNumberToIncrementInInitialBuild,
     					 String gitRepoURL) {
         this.script = script
-        this.releaseMetaDataURL = releaseMetaDataURL
+        this.mavenGroupId = mavenGroupId
+        this.mavenArtifactId = mavenArtifactId
+        this.versionNumberToIncrementInInitialBuild = versionNumberToIncrementInInitialBuild
         this.gitRepoURL = gitRepoURL
     }
     
@@ -122,19 +117,60 @@ public class ConfigBuilder implements Serializable {
      * Create a builder and supply the required configuration information to build
      * from a public Git repository.
      * 
-     * @param script             The script in which the builder is used.
-     * @param releaseMetaDataURL A URL referring to a maven-metadata.xml file of a Maven repository
-     *                           that each successful build using the configured job deploys to. The meta-data
-     *                           will be used to obtain the last version number in order to increment it when
-     *                           starting a new build (see {@link Build#getNextVersion()}).
+     * @param script                 The script in which the builder is used.
+     * @param mavenGroupId           The Maven groupId of the artifact built by the configured job.
+     * @param mavenArtifactId        The Maven artifactId of the artifact built by the configured job.
+     * @param versionNumberToIncrementInInitialBuild The version number to use be incremented during the initial build.
+     * @param gitRepoURL             A URL referring to the Git repository that will be checked out to base the build on.
+     * @param dependencyUpdate configures how to update the dependencies in this job
+     */
+    public ConfigBuilder(script,
+                         String mavenGroupId,
+                         String mavenArtifactId,
+                         String versionNumberToIncrementInInitialBuild,
+                         String gitRepoURL,
+                         dependencyUpdate) {
+        this(script, mavenGroupId, mavenArtifactId, versionNumberToIncrementInInitialBuild, gitRepoURL)
+        this.dependencyUpdate = dependencyUpdate
+    }
+    
+    /**
+     * Create a builder and supply the required configuration information to build
+     * from a public Git repository.
+     * <p>
+     * The version provided in the pom.xml whose path is provided will be used as the base of the increment
+     * of the version number in the first build.
+     * 
+     * @param script     The script in which the builder is used.
+     * @param pomPath    The path to a {@code pom.xml} file from which the following info is read:
+     *                   the Maven groupId and artifactId and the version number for the first build.
+     * @param gitRepoURL A URL referring to the Git repository that will be checked out to base the build on.
+     */
+    public ConfigBuilder(script,
+                         String pomPath,
+                         String gitRepoURL) {
+        this(script, null, null, null, gitRepoURL)
+        this.pomPath = pomPath
+    }
+    
+    /**
+     * Create a builder and supply the required configuration information to build
+     * from a public Git repository.
+     * <p>
+     * The version provided in the pom.xml whose path is provided will be used as the base of the increment
+     * of the version number in the first build.
+     * 
+     * @param script     The script in which the builder is used.
+     * @param pomPath    The path to a {@code pom.xml} file from which the following info is read:
+     *                   the Maven groupId and artifactId and the version number for the first build.
      * @param gitRepoURL A URL referring to the Git repository that will be checked out to base the build on.
      * @param dependencyUpdate configures how to update the dependencies in this job
      */
     public ConfigBuilder(script,
-                         String releaseMetaDataURL,
+                         String pomPath,
                          String gitRepoURL,
                          dependencyUpdate) {
-        this(script, releaseMetaDataURL, gitRepoURL)
+        this(script, pomPath, gitRepoURL)
         this.dependencyUpdate = dependencyUpdate
     }
 	
@@ -194,10 +230,19 @@ public class ConfigBuilder implements Serializable {
      * Create a new configuration from the information supplied to the builder.
      */
     public Config build() {
-        parseMavenMetadata()
+        installToolsIfNecessary()
+        if(!this.mavenGroupId) {
+            this.mavenGroupId = readMavenGroupIdFrom(pomPath)
+        }
+        if(!this.mavenArtifactId) {
+            this.mavenArtifactId = readMavenArtifactIdFrom(pomPath)
+        }
+        if(!this.versionNumberToIncrementInInitialBuild) {
+            this.versionNumberToIncrementInInitialBuild = readVersionNumberToIncrementInInitialBuildFrom(pomPath)
+        }
+        def currentReleaseAndItsCommitHash = findCurrentReleaseVersionAndItsCommitHash()
         def config = new org.jactr.Config(
             this.script,
-            this.releaseMetaDataURL,
             this.propertyForEclipseVersion,
             this.gitRepoURL,
             this.gitCredentialsId,
@@ -208,48 +253,53 @@ public class ConfigBuilder implements Serializable {
             this.jobsToTrigger,
             this.mavenGroupId,
             this.mavenArtifactId,
-            this.mavenCurrentReleaseVersion,
-            this.currentReleaseCommitHash)
+            currentReleaseAndItsCommitHash['version'],
+            currentReleaseAndItsCommitHash['commitHash'])
         return config
     }
 	
-    private void parseMavenMetadata() {
+    private String readMavenGroupIdFrom(String pomPath) {
+        return readMavenPomProjectElement(pomPath, 'groupId')
+    }
+    
+    private String readMavenArtifactIdFrom(String pomPath) {
+        return readMavenPomProjectElement(pomPath, 'artifactId')
+    }
+    
+    private String readVersionNumberToIncrementInInitialBuildFrom(String pomPath) {
+        return readMavenPomProjectElement(pomPath, 'version')
+    }
+    
+    private String readMavenPomProjectElement(String pomPath, String elementName) {
         script.node(this.labelForJenkinsNode) {
-            installToolsIfNecessary()
             def tmpDir=script.pwd tmp: true
-            
-            // Get the Maven meta-data: groupId, artifactId, release version
-            def mavenMetaDataFile = tmpDir+'/maven-metadata.xml'
-            def groupIdFile = tmpDir+'/maven.groupId'
-            def artifactIdFile = tmpDir+'/maven.artifactId'
-            def versionFile = tmpDir+'/maven.release'
-            script.sh '''HTTP_STATUS_CODE=$(curl --silent \
-                              --output '''+mavenMetaDataFile+''' \
-                              --write-out "%{http_code}" \
-                              '''+this.releaseMetaDataURL+''') \
-                         && if [ "$HTTP_STATUS_CODE" -ne "200" ]; then
-                                echo "Non-200 HTTP status code $HTTP_STATUS_CODE when retrieving '''+this.releaseMetaDataURL+'''";
-                                exit 1;
-                            fi'''
-            script.sh 'xpath -e metadata/groupId -q '+mavenMetaDataFile+' | sed --regexp-extended "s/<\\/?groupId>//g" > '+groupIdFile
-            script.sh 'xpath -e metadata/artifactId -q '+mavenMetaDataFile+' | sed --regexp-extended "s/<\\/?artifactId>//g" > '+artifactIdFile
-            script.sh 'xpath -e metadata/versioning/release -q '+mavenMetaDataFile+' | sed --regexp-extended "s/<\\/?release>//g" > '+versionFile
-            this.mavenGroupId = script.readFile(groupIdFile).trim()
-            this.mavenArtifactId = script.readFile(artifactIdFile).trim()
-            this.mavenCurrentReleaseVersion = script.readFile(versionFile).trim()
-            String[] versionParts = this.mavenCurrentReleaseVersion.split('-')
-            if(versionParts.length != 2) {
-                throw new IllegalArgumentException("Last release version '"+this.mavenCurrentReleaseVersion+"' is not in format <major>.<minor>.<patch>-<commitHash>")
-            }
-            this.currentReleaseCommitHash = versionParts[1]
-            script.sh 'rm '+mavenMetaDataFile
-            script.sh 'rm '+groupIdFile
-            script.sh 'rm '+artifactIdFile
-            script.sh 'rm '+versionFile
+            def elementFile = tmpDir+'/maven.'+elementName
+            script.sh 'xpath -e project/'+elementName+' -q '+pomPath+' | sed --regexp-extended "s/<\\/?'+elementName+'>//g" > '+elementFile
+            def element = script.readFile(elementFile).trim()
+            script.sh 'rm '+elementFile
+            return element
         }
     }
     
-
+    private void findCurrentReleaseVersionAndItsCommitHash() {
+        script.node(this.labelForJenkinsNode) {
+            def tmpDir=script.pwd tmp:true
+            def gitLogFile=tmpDir+'/git.log'
+            script.sh '''git log --oneline --max-count=1 --grep "^Release version [\.0-9a-f\-]\{1,\}$" > '''+gitLogFile
+            def gitLog=script.readFile(gitLogFile).trim()
+            script.sh 'rm '+gitLogFile
+            if(gitLog) {
+                // Split e.g. "f44356b Release version 1.0.10-2de0bc4" or
+                //            "f44356b Release version 1.0.10" 
+                def commitHashAndReleaseMessage=gitLog.split(" ")
+                return [ version:    commitHashAndReleaseMessage[3],
+                         commitHash: commitHashAndReleaseMessage[0] ]
+            } else {
+                return [ version:    this.versionNumberToIncrementInInitialBuild,
+                         commitHash: null ]
+            } 
+        }
+    }
 
     private void installToolsIfNecessary() {
         // Retry is necessary because downloads via apt-get are unreliable
