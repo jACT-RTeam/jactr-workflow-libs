@@ -28,18 +28,19 @@ public class EclipseDependencyUpdate /* extends AbstractDependencyUpdate */ impl
      * environment variable to be set.
      */
     public void updateDependency(script,
-                                 dependencyToUpdateForMaven, newVersionForMaven,
-                                 dependencyToUpdateForEclipse, newVersionForEclipse) {
+                                 dependencyToUpdateForMaven,
+                                 dependencyToUpdateForEclipse,
+                                 newVersion) {
         def tmpDir=script.pwd tmp: true
         script.echo '''sed \
                      --in-place \
                      --regexp-extended \
-                       \'s/'''+dependencyToUpdateForEclipse+''';bundle-version="[^"]*"/'''+dependencyToUpdateForEclipse+''';bundle-version="'''+newVersionForEclipse+'''"/g\' \
+                       \'s/'''+dependencyToUpdateForEclipse+''';bundle-version="[^"]*"/'''+dependencyToUpdateForEclipse+''';bundle-version="'''+newVersion+'''"/g\' \
                      '''+pathToManifestMf
         script.sh '''sed \
                      --in-place \
                      --regexp-extended \
-                       \'s/'''+dependencyToUpdateForEclipse+''';bundle-version="[^"]*"/'''+dependencyToUpdateForEclipse+''';bundle-version="'''+newVersionForEclipse+'''"/g\' \
+                       \'s/'''+dependencyToUpdateForEclipse+''';bundle-version="[^"]*"/'''+dependencyToUpdateForEclipse+''';bundle-version="'''+newVersion+'''"/g\' \
                      '''+pathToManifestMf
     }
 

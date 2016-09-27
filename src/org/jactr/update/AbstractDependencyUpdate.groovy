@@ -26,21 +26,19 @@ abstract class AbstractDependencyUpdate implements Serializable {
      * @param dependencyToUpdateForMaven the reference to the dependency to be updated in
      *                                   Maven format ({@code <groupId>:<artifactId>},
      *                                   e.g. {@code de.monochromata.anaphors:anaphors})
-     * @param newVersionForMaven the new version of the dependency in Maven format
-     *                           ({@code <major>.<minor>.<patch>-<qualifier>}, e.g.
-     *                           {@code 1.0.0-abcdef})
      * @param dependencyToUpdateForEclipse the reference to the dependency to be updated
      *                                     in Eclipse format ({@code <groupId>.<artifactId>}
      *                                     - with redundancy between groupId and artifactId
      *                                     eliminated, e.g. {@code de.monochromata.anaphors}
      *                                     for groupId {@code de.monochromata.anaphors} and
      *                                     artifactId {@code anaphors})
-     * @param newVersionForEclipse the new version of the dependency in Eclipse format
-     *                             ({@code <major>.<minor>.<patch>.<qualifier>}, e.g.
-     *                             {@code 1.0.0.abcdef})
+     * @param newVersion the new version of the dependency in 
+     *                           ({@code <major>.<minor>.<patch>} format, e.g.
+     *                           {@code 1.0.0})
      */
     abstract void updateDependency(script,
-                                   dependencyToUpdateForMaven, newVersionForMaven,
-                                   dependencyToUpdateForEclipse, newVersionForEclipse)
+                                   dependencyToUpdateForMaven,
+                                   dependencyToUpdateForEclipse,
+                                   newVersion)
 
 }

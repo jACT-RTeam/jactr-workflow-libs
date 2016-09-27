@@ -39,8 +39,9 @@ public class MavenPropertyUpdate /* extends AbstractDependencyUpdate */ implemen
      * environment variable to be set.
      */
     public void updateDependency(script,
-                                 dependencyToUpdateForMaven, newVersionForMaven,
-                                 dependencyToUpdateForEclipse, newVersionForEclipse) {
+                                 dependencyToUpdateForMaven,
+                                 dependencyToUpdateForEclipse,
+                                 newVersion) {
         def tmpDir=script.pwd tmp: true
         def propertyForDependency = dependencyToUpdateForMaven.split(':')[0]+'.version'
         script.sh '''mvn \
@@ -48,7 +49,7 @@ public class MavenPropertyUpdate /* extends AbstractDependencyUpdate */ implemen
                  --settings $PATH_TO_SETTINGS_XML \
                  --file '''+pomPath+''' \
                  -Dproperty='''+propertyForDependency+''' \
-                 -DnewVersion='''+newVersionForMaven+''' \
+                 -DnewVersion='''+newVersion+''' \
                  versions:update-property'''
     }
 

@@ -30,8 +30,6 @@ def run(Config config) {
                 if(!dependencyToUpdateForEclipse.endsWith(dependencyMavenArtifactId)) {
                      dependencyToUpdateForEclipse += "."+dependencyMavenArtifactId
                 }
-                def newDependencyVersionForMaven = config.script.newDependencyVersion
-                def newDependencyVersionForEclipse = config.script.newDependencyVersion.replaceAll('-', '.')
                 // See git man page for the git store credential for information on the file format.
                 // https://git-scm.com/docs/git-credential-store
                 withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: config.gitCredentialsId, usernameVariable: 'GIT_REPO_USER', passwordVariable: 'GIT_REPO_PASSWORD'],
@@ -39,28 +37,27 @@ def run(Config config) {
                             
                     // Update version in the dependency declaration
                     config.dependencyUpdate.updateDependency(config.script,
-                        dependencyToUpdateForMaven, newDependencyVersionForMaven,
-                        dependencyToUpdateForEclipse, newDependencyVersionForEclipse)
+                        dependencyToUpdateForMaven,
+                        dependencyToUpdateForEclipse,
+                        config.script.newDependencyVersion)
                         
                     // Push the change
                     gitPush(config, config.dependencyUpdate.modifiedFilesPattern,
-                        'Bump version of dependency '+dependencyToUpdateForMaven+' to '+newDependencyVersionForMaven+' in '+config.dependencyUpdate.modifiedFilesPattern)
+                        'Bump version of dependency '+dependencyToUpdateForMaven+' to '+config.script.newDependencyVersion+' in '+config.dependencyUpdate.modifiedFilesPattern)
                 }
            }
 		   
 		   stage name: 'Set versions', concurrency: 1
 		   def oneLineGitLogSinceCurrentRelease = getOneLineGitLogSinceCurrentRelease(config)
-		   def lastCommitHash = getLastCommitHash()
-		   def newVersionForMaven = getNextVersion(config, oneLineGitLogSinceCurrentRelease, lastCommitHash)
-		   def newVersionForEclipse = newVersionForMaven.replaceAll('-', '.')
+		   def newVersion = getNextVersion(config, oneLineGitLogSinceCurrentRelease)
 		   if(config.isTychoBuild) {
-			   maven('''-DnewVersion='''+newVersionForEclipse+''' \
+			   maven('''-DnewVersion='''+newVersion+''' \
 			   			-Dtycho.mode=maven \
 					    org.eclipse.tycho:tycho-versions-plugin:0.26.0:set-version''')
 		   } else {
 			   maven('''--file parent/pom.xml \
-	     				-DnewVersion='''+newVersionForMaven+''' \
-			   			-D'''+config.propertyForEclipseVersion+'''='''+newVersionForEclipse+''' \
+	     				-DnewVersion='''+newVersion+''' \
+			   			-D'''+config.propertyForEclipseVersion+'''='''+newVersion+''' \
 					    versions:set''')
 		   }
 	       
@@ -74,8 +71,8 @@ def run(Config config) {
 	       }
 	       try {
 		       maven(config.displayNumber,
-		       		 '''-DnewVersion='''+newVersionForMaven+''' \
-	     				-D'''+config.propertyForEclipseVersion+'''='''+newVersionForEclipse+''' \
+		       		 '''-DnewVersion='''+newVersion+''' \
+	     				-D'''+config.propertyForEclipseVersion+'''='''+newVersion+''' \
 		       		    clean verify''')
    		   } finally {
    		       if(config.displayNumber) {
@@ -93,8 +90,8 @@ def run(Config config) {
 	       		 && cat $PATH_TO_UPLOAD_SERVER_SSH_FINGERPRINT_FILE >> ~/.ssh/known_hosts'''
 	       // Retry is necessary because upload is unreliable
 	       retry(5) {
-	       		maven('''-DnewVersion='''+newVersionForMaven+''' \
-     					 -D'''+config.propertyForEclipseVersion+'''='''+newVersionForEclipse+''' \
+	       		maven('''-DnewVersion='''+newVersion+''' \
+     					 -D'''+config.propertyForEclipseVersion+'''='''+newVersion+''' \
 	       				 -DskipTests=true \
 	       				 -DskipITs=true \
 	       				 deploy''')
@@ -103,19 +100,19 @@ def run(Config config) {
 	       stage name:"Site deploy", concurrency: 1
 	       // Retry is necessary because upload is unreliable
 	       retry(5) {
-	       		maven('''-DnewVersion='''+newVersionForMaven+''' \
-     					 -D'''+config.propertyForEclipseVersion+'''='''+newVersionForEclipse+''' \
+	       		maven('''-DnewVersion='''+newVersion+''' \
+     					 -D'''+config.propertyForEclipseVersion+'''='''+newVersion+''' \
 	       				 -DskipTests=true \
 	       				 -DskipITs=true \
 	       				 site-deploy''')
 	     	}
-	     	pushNewVersionNumberToGit(config, "*", newVersionForMaven)
+	     	pushNewVersionNumberToGit(config, "*", newVersion)
 	     	
 	     	stage name: "Trigger dependent jobs", concurrency: 1
 	     	for(String jobToTrigger in config.jobsToTrigger) {
 	     	     build job: jobToTrigger,
 	     	           parameters: [string(name: 'dependencyToUpdate', value: config.mavenGroupId+':'+config.mavenArtifactId),
-	     	                        string(name: 'newDependencyVersion', value: newVersionForMaven)],
+	     	                        string(name: 'newDependencyVersion', value: newVersion)],
                        wait: false
 	     	}
 	    }
@@ -205,36 +202,19 @@ def getOneLineGitLogSinceCurrentRelease(Config config) {
     return oneLineGitLogSinceCurrentRelease
 }
 
-def getLastCommitHash() {
-    def tmpDir=pwd tmp: true
-    def commitHashFile=tmpDir+'/last-commit-hash.txt'
-    sh 'git log --oneline --max-count=1 | cut --delimiter=" " --fields=1 >'+commitHashFile
-    def lastCommitHash = readFile(commitHashFile).trim()
-    sh 'rm '+commitHashFile
-    return lastCommitHash
-}
-
 /**
- * Auto-assign a version number based on the last release published to the Maven repository. This
- * method shall be used to set version numbers via {@link Config#setNewVersion(String)}. By using this
- * method, the deployed version number will only be incremented upon successfully deployed builds.
+ * Auto-assign a version number based on the last release announced in a commit message in the Git repository.
  * 
- * <p>Version numbers returned by this method have the format {@code <majorPart>.<minorPart>.<patchPart>-<commitHash>}
- * where {@code <commitHash>} is the short hash of the last commit contained in the state checkout out of the repository
- * that this build uses. The hash is appended to the version number to correlate the state of the Git repository
- * with the release that it produced. This removes the need to tag the Git repository with release numbers, as
- * it is expected that the majority of pushed commits will yield a successful release.
+ * <p>Version numbers returned by this method have the format {@code <majorPart>.<minorPart>.<patchPart>}.
  *
  * <p>The method increments major part of the version number and sets minor and patch parts to 0,
- * if the description of the last commit contains the string {@code +majorVersion}. It increments
- * the minor part and sets the patch part to 0, if the string
+ * if the description of the commits since the last release contain the string {@code +majorVersion}.
+ * It increments the minor part and sets the patch part to 0, if the string
  * {@code +minorVersion} is found. The patch part is incremented in all other cases.
  *
- * <p>Note that the version numbers returned by this method comply to the format used by Maven
- * ({@code <majorPart>.<minorPart>.<patchPart>-<qualifier>}) but not to the format used by Eclipse
- * ({@code <majorPart>.<minorPart>.<patchPart>.<qualifier>}).
+ * <p>Note that the version numbers returned by this method comply to the format used by both Maven and Eclipse.
  */
-def getNextVersion(Config config, String oneLineGitLogSinceCurrentRelease, String lastCommitHash) {
+def getNextVersion(Config config, String oneLineGitLogSinceCurrentRelease) {
 	def tmpDir=pwd tmp: true
 	
 	// Create new version number
@@ -249,12 +229,6 @@ def getNextVersion(Config config, String oneLineGitLogSinceCurrentRelease, Strin
 		newVersion = parts[0]+"."+parts[1]+"."+(parts[2].toInteger()+1)
 	}
 	
-	// Add last commit hash so permit version numbers to be correlated with Git commits.
-	// Note that the version number in this format of suitable for Maven, but not for Eclipse.
-	// While Maven versions have the format /<major>.<minor>.<patch>-<qualifier>/ , 
-	//     Eclipse versions have the format /<major>.<minor>.<patch>.<qualifier>/ ,
-	// thus - needs to be replaced by . to create the latter out of the former.
-	newVersion += '-'+lastCommitHash
 	echo 'Updating version '+config.currentReleaseVersion+' -> '+newVersion
 	currentBuild.displayName = '#'+currentBuild.number+' v'+newVersion
 	return newVersion

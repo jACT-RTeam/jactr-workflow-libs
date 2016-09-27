@@ -26,15 +26,16 @@ public class MavenDependencyUpdate /* extends AbstractDependencyUpdate */ implem
      * environment variable to be set.
      */
     public void updateDependency(script,
-                                 dependencyToUpdateForMaven, newVersionForMaven,
-                                 dependencyToUpdateForEclipse, newVersionForEclipse) {
+                                 dependencyToUpdateForMaven,
+                                 dependencyToUpdateForEclipse,
+                                 newVersion) {
         def tmpDir=script.pwd tmp: true
         script.sh '''mvn \
                  --errors \
                  --settings $PATH_TO_SETTINGS_XML \
                  --file '''+pomPath+''' \
                  -Dincludes='''+dependencyToUpdateForMaven+''' \
-                 -DdepVersion='''+newVersionForMaven+''' \
+                 -DdepVersion='''+newVersion+''' \
                  versions:use-dep-version'''
     }
 
