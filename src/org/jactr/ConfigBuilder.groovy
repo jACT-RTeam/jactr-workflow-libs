@@ -285,7 +285,7 @@ public class ConfigBuilder implements Serializable {
         script.node(this.labelForJenkinsNode) {
             def tmpDir=script.pwd tmp:true
             def gitLogFile=tmpDir+'/git.log'
-            script.sh '''git log --oneline --max-count=1 --grep "^Release version [\.0-9a-f\-]\{1,\}$" > '''+gitLogFile
+            script.sh '''git log --oneline --max-count=1 --grep "^Release version [\\.0-9a-f\\-]\\{1,\\}$" > '''+gitLogFile
             def gitLog=script.readFile(gitLogFile).trim()
             script.sh 'rm '+gitLogFile
             if(gitLog) {
