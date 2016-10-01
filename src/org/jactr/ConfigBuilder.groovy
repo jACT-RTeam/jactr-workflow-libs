@@ -270,9 +270,10 @@ public class ConfigBuilder implements Serializable {
     
     private String readMavenPomProjectElement(String pomPath, String elementName) {
         script.node(this.labelForJenkinsNode) {
+            def workspaceDir=script.pwd
             def tmpDir=script.pwd tmp: true
             def elementFile = tmpDir+'/maven.'+elementName
-            script.sh 'xpath -e project/'+elementName+' -q '+pomPath+' | sed --regexp-extended "s/<\\/?'+elementName+'>//g" > '+elementFile
+            script.sh 'xpath -e project/'+elementName+' -q '+workspaceDir+'/'+pomPath+' | sed --regexp-extended "s/<\\/?'+elementName+'>//g" > '+elementFile
             def element = script.readFile(elementFile).trim()
             script.sh 'rm '+elementFile
             return element
