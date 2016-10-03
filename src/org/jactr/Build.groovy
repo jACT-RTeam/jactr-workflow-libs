@@ -4,8 +4,8 @@ package org.jactr;
 // the contained methods to access standard pipeline step functions, see
 // https://github.com/jenkinsci/workflow-cps-global-lib-plugin/blob/master/README.md#writing-shared-code
 
-def run(Config config) {
-	node(config.labelForJenkinsNode) {
+def run(ConfigBuilder configBuilder) {
+	node(configBuilder.labelForJenkinsNode) {
 	   withCredentials([[$class: 'FileBinding', credentialsId: 'settings.xml', variable: 'PATH_TO_SETTINGS_XML'],
 	   					[$class: 'FileBinding', credentialsId: 'jarsigner.keystore', variable: 'PATH_TO_JARSIGNER_KEYSTORE'],
 	   					[$class: 'FileBinding', credentialsId: 'pubring.gpg', variable: 'PATH_TO_GPG_PUBLIC_KEYRING'],
@@ -16,7 +16,10 @@ def run(Config config) {
            def tmpDir=pwd tmp: true
 	   					
 		   stage name: 'Checkout', concurrency: 1
-		   checkout(config)
+		   checkout(configBuilder)
+		   
+		   // Obtain config - building the config might access the checked out workspace.
+		   def config = configBuilder.build()
 		   
            stage name:"Update dependencies", concurrency: 1
            // Update dependency version. The properties dependencyToUpdate and newDependencyVersion
@@ -122,9 +125,9 @@ def run(Config config) {
 	}
 }
 
-def checkout(Config config) {
+def checkout(ConfigBuilder configBuilder) {
     // Use a more complex configuration instead of
-    // git url: config.gitRepoURL, credentialsId: config.credentialsID
+    // git url: configBuilder.gitRepoURL, credentialsId: configBuilder.credentialsID
     // to be able to exclude Jenkins jobs from triggering themselves. This leaves the Git repository in detached head
     // state which needs to be overcome using git checkout master before proceeding.
     checkout([$class: 'GitSCM',
@@ -134,9 +137,9 @@ def checkout(Config config) {
         gitTool: 'Default',
         submoduleCfg: [],
         userRemoteConfigs:
-            config.gitCredentialsId != null 
-                ? [[url: config.gitRepoURL, credentialsId: config.gitCredentialsId]]
-                : [[url: config.gitRepoURL]]
+            configBuilder.gitCredentialsId != null 
+                ? [[url: configBuilder.gitRepoURL, credentialsId: configBuilder.gitCredentialsId]]
+                : [[url: configBuilder.gitRepoURL]]
             ])
     sh '''git branch -f temp \
           && git checkout master \

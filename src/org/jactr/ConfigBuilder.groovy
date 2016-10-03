@@ -14,29 +14,23 @@ public class ConfigBuilder implements Serializable {
      * The script in which the config builder is used.
      */
     private final script
-	
-    /**
-     * The URL referring to a maven-metadata.xml file of a Maven repository that each successful build
-     * using the configured job deploys to.
-     */
-    private final String releaseMetaDataURL
     
     /**
      * The URL referring to the Git repository that will be checked out to base the build on.
      */
-    private final String gitRepoURL
+    public final String gitRepoURL
     
     /**
      * Optional credentials required to access the Git repository in case it is not public.
      * {@code null}, if the Git repository is public and does not require credentials. Defaults to {@code null}.
      */
-    private String gitCredentialsId
+    public String gitCredentialsId
     
     /**
      * The label of the Jenkins node to be used to execute the job run
      * from the configuration created by the builder. Has a default value.
      */
-    private String labelForJenkinsNode = "2gb";
+    public final String labelForJenkinsNode = "2gb";
     
     /**
      * The Maven property that will be set with the next version in Eclipse format. Has a default value.
@@ -74,7 +68,7 @@ public class ConfigBuilder implements Serializable {
     private String pomPath = null
     
     /**
-     * The Maven groupId obtained from {@link #releaseMetaDataURL} before the configuration is build.
+     * The Maven groupId obtained from {@link #pomPath} before the configuration is build.
      *
      * @see #parseMavenMetadata()
      * @see #build()
@@ -82,7 +76,7 @@ public class ConfigBuilder implements Serializable {
     private String mavenGroupId = null
     
     /**
-     * The Maven artifactId obtained from {@link #releaseMetaDataURL} before the configuration is build.
+     * The Maven artifactId obtained from {@link #pomPath} before the configuration is build.
      *
      * @see #parseMavenMetadata()
      * @see #build()
