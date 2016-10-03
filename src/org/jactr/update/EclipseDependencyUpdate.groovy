@@ -1,7 +1,7 @@
 package org.jactr.update;
 
 /**
- * Updates a dependency in a {@code META-INF/MANIFEST.MF} file.
+ * Updates all dependencies with a given Maven groupId in a {@code META-INF/MANIFEST.MF} file.
  */
 public class EclipseDependencyUpdate /* extends AbstractDependencyUpdate */ implements Serializable {
     
@@ -24,23 +24,18 @@ public class EclipseDependencyUpdate /* extends AbstractDependencyUpdate */ impl
     }
 
     /**
-     * This method executes a shell script that expects the {@code PATH_TO_SETTINGS_XML}
-     * environment variable to be set.
+     * Updates all dependencies with the groupId from {@cpde dependencyToUpdateForMaven}
+     * to the given new version.
      */
     public void updateDependency(script,
                                  dependencyToUpdateForMaven,
                                  dependencyToUpdateForEclipse,
                                  newVersion) {
-        def tmpDir=script.pwd tmp: true
-        script.echo '''sed \
-                     --in-place \
-                     --regexp-extended \
-                       \'s/'''+dependencyToUpdateForEclipse+''';bundle-version="[^"]*"/'''+dependencyToUpdateForEclipse+''';bundle-version="'''+newVersion+'''"/g\' \
-                     '''+pathToManifestMf
+        def dependencyMavenGroupId=dependencyToUpdateForMaven.split(':')[0]
         script.sh '''sed \
                      --in-place \
                      --regexp-extended \
-                       \'s/'''+dependencyToUpdateForEclipse+''';bundle-version="[^"]*"/'''+dependencyToUpdateForEclipse+''';bundle-version="'''+newVersion+'''"/g\' \
+                       \'s/('''+dependencyMavenGroupId+'''[^;]*);bundle-version="[^"]*"/\\1;bundle-version="'''+newVersion+'''"/g\' \
                      '''+pathToManifestMf
     }
 
