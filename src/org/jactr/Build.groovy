@@ -15,111 +15,116 @@ def run(ConfigBuilder configBuilder) {
 	   					
            def tmpDir=pwd tmp: true
 	   					
-		   stage name: 'Checkout', concurrency: 1
-		   checkout(configBuilder)
+		   stage('Checkout and configure') {
+		       checkout(configBuilder)
+               // Obtain config - building the config might access the checked out workspace.
+               def config = configBuilder.build()
+		   }
 		   
-		   // Obtain config - building the config might access the checked out workspace.
-		   def config = configBuilder.build()
-		   
-           stage name:"Update dependencies", concurrency: 1
-           // Update dependency version. The properties dependencyToUpdate and newDependencyVersion
-           // are job parameters.
-           if(config.script.dependencyToUpdate) {
-                def dependencyToUpdateForMaven=dependencyToUpdate
-                def dependencyGA=dependencyToUpdate.split(':')
-                def dependencyMavenGroupId=dependencyGA[0]
-                def dependencyMavenArtifactId=dependencyGA[1]
-                def dependencyToUpdateForEclipse=dependencyMavenGroupId
-                if(!dependencyToUpdateForEclipse.endsWith(dependencyMavenArtifactId)) {
-                     dependencyToUpdateForEclipse += "."+dependencyMavenArtifactId
-                }
-                // See git man page for the git store credential for information on the file format.
-                // https://git-scm.com/docs/git-credential-store
-                withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: config.gitCredentialsId, usernameVariable: 'GIT_REPO_USER', passwordVariable: 'GIT_REPO_PASSWORD'],
-                                 [$class: 'FileBinding', credentialsId: config.gitCredentialsId+'File', variable: 'GIT_CREDENTIALS_FILE']]) {
+           stage('Update dependencies') {
+               // Update dependency version. The properties dependencyToUpdate and newDependencyVersion
+               // are job parameters.
+               if(config.script.dependencyToUpdate) {
+                    def dependencyToUpdateForMaven=dependencyToUpdate
+                    def dependencyGA=dependencyToUpdate.split(':')
+                    def dependencyMavenGroupId=dependencyGA[0]
+                    def dependencyMavenArtifactId=dependencyGA[1]
+                    def dependencyToUpdateForEclipse=dependencyMavenGroupId
+                    if(!dependencyToUpdateForEclipse.endsWith(dependencyMavenArtifactId)) {
+                         dependencyToUpdateForEclipse += "."+dependencyMavenArtifactId
+                    }
+                    // See git man page for the git store credential for information on the file format.
+                    // https://git-scm.com/docs/git-credential-store
+                    withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: config.gitCredentialsId, usernameVariable: 'GIT_REPO_USER', passwordVariable: 'GIT_REPO_PASSWORD'],
+                                     [$class: 'FileBinding', credentialsId: config.gitCredentialsId+'File', variable: 'GIT_CREDENTIALS_FILE']]) {
+                                
+                        // Update version in the dependency declaration
+                        config.dependencyUpdate.updateDependency(config.script,
+                            dependencyToUpdateForMaven,
+                            dependencyToUpdateForEclipse,
+                            config.script.newDependencyVersion)
                             
-                    // Update version in the dependency declaration
-                    config.dependencyUpdate.updateDependency(config.script,
-                        dependencyToUpdateForMaven,
-                        dependencyToUpdateForEclipse,
-                        config.script.newDependencyVersion)
-                        
-                    // Push the change
-                    gitPush(config, config.dependencyUpdate.modifiedFilesPattern,
-                        'Update dependency '+dependencyToUpdateForMaven+' to '+config.script.newDependencyVersion+' in '+config.dependencyUpdate.modifiedFilesPattern)
-                }
+                        // Push the change
+                        gitPush(config, config.dependencyUpdate.modifiedFilesPattern,
+                            'Update dependency '+dependencyToUpdateForMaven+' to '+config.script.newDependencyVersion+' in '+config.dependencyUpdate.modifiedFilesPattern)
+                    }
+               }
            }
 		   
-		   stage name: 'Set versions', concurrency: 1
-		   def currentReleaseAndItsCommitHash = getCurrentReleaseVersionAndItsCommitHash(config)
-		   def currentReleaseVersion = currentReleaseAndItsCommitHash['version']
-           def currentReleaseCommitHash = currentReleaseAndItsCommitHash['commitHash']
-		   def oneLineGitLogSinceCurrentRelease = getOneLineGitLogSinceCurrentRelease(config, currentReleaseCommitHash)
-		   def newVersion = getNextVersion(config, currentReleaseVersion, oneLineGitLogSinceCurrentRelease)
-		   if(config.isTychoBuild) {
-			   maven('''-DnewVersion='''+newVersion+''' \
-			   			-Dtycho.mode=maven \
-					    org.eclipse.tycho:tycho-versions-plugin:0.26.0:set-version''')
-		   } else {
-			   maven('''--file parent/pom.xml \
-	     				-DnewVersion='''+newVersion+''' \
-			   			-D'''+config.propertyForEclipseVersion+'''='''+newVersion+''' \
-					    versions:set''')
-		   }
-	       
-	       stage name: "Clean & verify", concurrency: 1
-	       if(config.displayNumber) {
-	       		sh '''Xvfb :'''+config.displayNumber+''' -screen 0 1920x1080x16 -nolisten tcp -fbdir /var/run &
-	       			  echo $! > '''+tmpDir+'''/xvfb.pid;
-	       		      while [ ! -f /tmp/.X'''+config.displayNumber+'''-lock ]; do echo "Waiting for display :'''+config.displayNumber+'''"; sleep 1; done
-	       			  ratpoison --display :'''+config.displayNumber+''' &
-	       			  echo $! > '''+tmpDir+'''/ratpoison.pid'''
-	       }
-	       try {
-		       maven(config.displayNumber,
-		       		 '''-DnewVersion='''+newVersion+''' \
-	     				-D'''+config.propertyForEclipseVersion+'''='''+newVersion+''' \
-		       		    clean verify''')
-   		   } finally {
-   		       if(config.displayNumber) {
-       		   	   sh '''kill $(cat '''+tmpDir+'''/ratpoison.pid);
-       		   	         rm '''+tmpDir+'''/ratpoison.pid;
-       		   	         kill $(cat '''+tmpDir+'''/xvfb.pid);
-       		   	   		 rm '''+tmpDir+'''/xvfb.pid'''
-   	   		   }
+		   stage('Set versions') {
+    		   def currentReleaseAndItsCommitHash = getCurrentReleaseVersionAndItsCommitHash(config)
+    		   def currentReleaseVersion = currentReleaseAndItsCommitHash['version']
+               def currentReleaseCommitHash = currentReleaseAndItsCommitHash['commitHash']
+    		   def oneLineGitLogSinceCurrentRelease = getOneLineGitLogSinceCurrentRelease(config, currentReleaseCommitHash)
+    		   def newVersion = getNextVersion(config, currentReleaseVersion, oneLineGitLogSinceCurrentRelease)
+    		   if(config.isTychoBuild) {
+    			   maven('''-DnewVersion='''+newVersion+''' \
+    			   			-Dtycho.mode=maven \
+    					    org.eclipse.tycho:tycho-versions-plugin:0.26.0:set-version''')
+    		   } else {
+    			   maven('''--file parent/pom.xml \
+    	     				-DnewVersion='''+newVersion+''' \
+    			   			-D'''+config.propertyForEclipseVersion+'''='''+newVersion+''' \
+    					    versions:set''')
+    		   }
+    	       
+    	       stage name: "Clean & verify", concurrency: 1
+    	       if(config.displayNumber) {
+    	       		sh '''Xvfb :'''+config.displayNumber+''' -screen 0 1920x1080x16 -nolisten tcp -fbdir /var/run &
+    	       			  echo $! > '''+tmpDir+'''/xvfb.pid;
+    	       		      while [ ! -f /tmp/.X'''+config.displayNumber+'''-lock ]; do echo "Waiting for display :'''+config.displayNumber+'''"; sleep 1; done
+    	       			  ratpoison --display :'''+config.displayNumber+''' &
+    	       			  echo $! > '''+tmpDir+'''/ratpoison.pid'''
+    	       }
+    	       try {
+    		       maven(config.displayNumber,
+    		       		 '''-DnewVersion='''+newVersion+''' \
+    	     				-D'''+config.propertyForEclipseVersion+'''='''+newVersion+''' \
+    		       		    clean verify''')
+       		   } finally {
+       		       if(config.displayNumber) {
+           		   	   sh '''kill $(cat '''+tmpDir+'''/ratpoison.pid);
+           		   	         rm '''+tmpDir+'''/ratpoison.pid;
+           		   	         kill $(cat '''+tmpDir+'''/xvfb.pid);
+           		   	   		 rm '''+tmpDir+'''/xvfb.pid'''
+       	   		   }
+       		   }
    		   }
 	
-	       stage name:"Deploy", concurrency: 1
-	       // TODO: Deploy to Maven Central will require the maven central ssh fingerprint
-	       sh '''touch ~/.ssh/known_hosts \
-	       		 && ssh-keygen -f ~/.ssh/known_hosts -R $UPLOAD_SERVER_NAME \
-	       		 && cat $PATH_TO_UPLOAD_SERVER_SSH_FINGERPRINT_FILE >> ~/.ssh/known_hosts'''
-	       // Retry is necessary because upload is unreliable
-	       retry(5) {
-	       		maven('''-DnewVersion='''+newVersion+''' \
-     					 -D'''+config.propertyForEclipseVersion+'''='''+newVersion+''' \
-	       				 -DskipTests=true \
-	       				 -DskipITs=true \
-	       				 deploy''')
+	       stage('Deploy') {
+    	       // TODO: Deploy to Maven Central will require the maven central ssh fingerprint
+    	       sh '''touch ~/.ssh/known_hosts \
+    	       		 && ssh-keygen -f ~/.ssh/known_hosts -R $UPLOAD_SERVER_NAME \
+    	       		 && cat $PATH_TO_UPLOAD_SERVER_SSH_FINGERPRINT_FILE >> ~/.ssh/known_hosts'''
+    	       // Retry is necessary because upload is unreliable
+    	       retry(5) {
+    	       		maven('''-DnewVersion='''+newVersion+''' \
+         					 -D'''+config.propertyForEclipseVersion+'''='''+newVersion+''' \
+    	       				 -DskipTests=true \
+    	       				 -DskipITs=true \
+    	       				 deploy''')
+    	       }
 	       }
 	             
-	       stage name:"Site deploy", concurrency: 1
-	       // Retry is necessary because upload is unreliable
-	       retry(5) {
-	       		maven('''-DnewVersion='''+newVersion+''' \
-     					 -D'''+config.propertyForEclipseVersion+'''='''+newVersion+''' \
-	       				 -DskipTests=true \
-	       				 -DskipITs=true \
-	       				 site-deploy''')
+	       stage('Site deploy') {
+    	       // Retry is necessary because upload is unreliable
+    	       retry(5) {
+    	       		maven('''-DnewVersion='''+newVersion+''' \
+         					 -D'''+config.propertyForEclipseVersion+'''='''+newVersion+''' \
+    	       				 -DskipTests=true \
+    	       				 -DskipITs=true \
+    	       				 site-deploy''')
+    	     	}
+    	     	pushNewVersionNumberToGit(config, "*", newVersion)
 	     	}
-	     	pushNewVersionNumberToGit(config, "*", newVersion)
 	     	
-	     	stage name: "Trigger dependent jobs", concurrency: 1
-	     	for(String jobToTrigger in config.jobsToTrigger) {
-	     	     build job: jobToTrigger,
-	     	           parameters: [string(name: 'dependencyToUpdate', value: config.mavenGroupId+':'+config.mavenArtifactId),
-	     	                        string(name: 'newDependencyVersion', value: newVersion)],
-                       wait: false
+	     	stage('Trigger dependent jobs') {
+    	     	for(String jobToTrigger in config.jobsToTrigger) {
+    	     	     build job: jobToTrigger,
+    	     	           parameters: [string(name: 'dependencyToUpdate', value: config.mavenGroupId+':'+config.mavenArtifactId),
+    	     	                        string(name: 'newDependencyVersion', value: newVersion)],
+                           wait: false
+    	     	}
 	     	}
 	    }
 	}
