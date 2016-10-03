@@ -16,11 +16,21 @@ public class EclipseDependencyUpdate /* extends AbstractDependencyUpdate */ impl
      * The path will differ from {@code META-INF/MANIFEST.MF} if e.g. a (sub-)module
      * of the referenced Maven project is to be altered.
      */
-    public final String pathToManifestMf
+    private final String pathToManifestMf
+    
+    /**
+     * Optional path to a {@code feature.xml} file to be modified by this update.
+     */
+    private String pathToFeatureXml
     
     public EclipseDependencyUpdate(String pathToManifestMf) {
         this.modifiedFilesPattern = pathToManifestMf
         this.pathToManifestMf = pathToManifestMf
+    }
+    
+    public EclipseDependencyUpdate(String pathToManifestMf, String pathToFeatureXml) {
+        this(pathToManifestMf)
+        this.pathToFeatureXml = pathToFeatureXml
     }
 
     /**
@@ -37,6 +47,13 @@ public class EclipseDependencyUpdate /* extends AbstractDependencyUpdate */ impl
                      --regexp-extended \
                        \'s/('''+dependencyMavenGroupId+'''[^;]*);bundle-version="[^"]*"/\\1;bundle-version="'''+newVersion+'''"/g\' \
                      '''+pathToManifestMf
+        if(this.pathToFeatureXml) {
+            script.sh '''sed \
+                         --in-place \
+                         --regexp-extended \
+                           \'s/<import plugin="('''+dependencyMavenGroupId+'''[^;]*)" version="[^"]*"/<import plugin="\\1" version="'''+newVersion+'''"/g\' \
+                         '''+pathToManifestMf
+        }
     }
 
 }
