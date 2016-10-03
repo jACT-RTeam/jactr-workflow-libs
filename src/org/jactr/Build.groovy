@@ -23,11 +23,12 @@ def run(ConfigBuilder configBuilder) {
     	   					
                def tmpDir=pwd tmp: true
     	   					
-    		   stage('Checkout and configure') {
+    		   stage('Checkout') {
     		       checkout(configBuilder)
-                   // Obtain config - building the config might access the checked out workspace.
-                   def config = configBuilder.build()
     		   }
+    		   
+               // Obtain config - building the config might access the checked out workspace.
+               def config = configBuilder.build()
     		   
                stage('Update dependencies') {
                    // Update dependency version. The properties dependencyToUpdate and newDependencyVersion
