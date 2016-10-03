@@ -42,21 +42,16 @@ def run(ConfigBuilder configBuilder) {
                         if(!dependencyToUpdateForEclipse.endsWith(dependencyMavenArtifactId)) {
                              dependencyToUpdateForEclipse += "."+dependencyMavenArtifactId
                         }
-                        // See git man page for the git store credential for information on the file format.
-                        // https://git-scm.com/docs/git-credential-store
-                        withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: config.gitCredentialsId, usernameVariable: 'GIT_REPO_USER', passwordVariable: 'GIT_REPO_PASSWORD'],
-                                         [$class: 'FileBinding', credentialsId: config.gitCredentialsId+'File', variable: 'GIT_CREDENTIALS_FILE']]) {
                                     
-                            // Update version in the dependency declaration
-                            config.dependencyUpdate.updateDependency(config.script,
-                                dependencyToUpdateForMaven,
-                                dependencyToUpdateForEclipse,
-                                config.script.newDependencyVersion)
-                                
-                            // Push the change
-                            gitPush(config, config.dependencyUpdate.modifiedFilesPattern,
-                                'Update dependency '+dependencyToUpdateForMaven+' to '+config.script.newDependencyVersion+' in '+config.dependencyUpdate.modifiedFilesPattern)
-                        }
+                        // Update version in the dependency declaration
+                        config.dependencyUpdate.updateDependency(config.script,
+                            dependencyToUpdateForMaven,
+                            dependencyToUpdateForEclipse,
+                            config.script.newDependencyVersion)
+                            
+                        // Push the change
+                        gitPush(config, config.dependencyUpdate.modifiedFilesPattern,
+                            'Update dependency '+dependencyToUpdateForMaven+' to '+config.script.newDependencyVersion+' in '+config.dependencyUpdate.modifiedFilesPattern)
                    }
                }
     		   
