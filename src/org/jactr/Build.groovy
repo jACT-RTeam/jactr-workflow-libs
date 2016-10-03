@@ -60,12 +60,12 @@ def run(ConfigBuilder configBuilder) {
                    }
                }
     		   
+               def currentReleaseAndItsCommitHash = getCurrentReleaseVersionAndItsCommitHash(config)
+               def currentReleaseVersion = currentReleaseAndItsCommitHash['version']
+               def currentReleaseCommitHash = currentReleaseAndItsCommitHash['commitHash']
+               def oneLineGitLogSinceCurrentRelease = getOneLineGitLogSinceCurrentRelease(config, currentReleaseCommitHash)
+               def newVersion = getNextVersion(config, currentReleaseVersion, oneLineGitLogSinceCurrentRelease)
     		   stage('Set versions') {
-        		   def currentReleaseAndItsCommitHash = getCurrentReleaseVersionAndItsCommitHash(config)
-        		   def currentReleaseVersion = currentReleaseAndItsCommitHash['version']
-                   def currentReleaseCommitHash = currentReleaseAndItsCommitHash['commitHash']
-        		   def oneLineGitLogSinceCurrentRelease = getOneLineGitLogSinceCurrentRelease(config, currentReleaseCommitHash)
-        		   def newVersion = getNextVersion(config, currentReleaseVersion, oneLineGitLogSinceCurrentRelease)
         		   if(config.isTychoBuild) {
         			   maven('''-DnewVersion='''+newVersion+''' \
         			   			-Dtycho.mode=maven \
