@@ -20,7 +20,8 @@ def run(ConfigBuilder configBuilder) {
     	   					[$class: 'FileBinding', credentialsId: 'secring.gpg', variable: 'PATH_TO_GPG_SECRET_KEYRING'],
     	   					[$class: 'FileBinding', credentialsId: 'upload.server.ssh.signature.file', variable: 'PATH_TO_UPLOAD_SERVER_SSH_FINGERPRINT_FILE'],
     	   					[$class: 'StringBinding', credentialsId: 'upload.server.name', variable: 'UPLOAD_SERVER_NAME'],]) {
-    	   					
+
+               installToolsIfNecessary()
                def tmpDir=pwd tmp: true
     	   					
     		   stage('Checkout') {
@@ -133,6 +134,23 @@ def run(ConfigBuilder configBuilder) {
     	    }
     	}
 	}
+}
+
+def installToolsIfNecessary() {
+    // Retry is necessary because downloads via apt-get are unreliable
+    retry(3) {
+        sh '''echo "deb http://http.debian.net/debian jessie-backports main" > /etc/apt/sources.list.d/jessie-backports.list \
+            && apt-get update \
+            && apt-get remove --yes openjdk-7-jdk \
+            && apt-get install --yes openjdk-8-jre-headless openjdk-8-jdk \
+            && /usr/sbin/update-java-alternatives -s java-1.8.0-openjdk-amd64 \
+            && apt-get install --yes curl git maven libxml-xpath-perl \
+            && apt-get install --yes xvfb ratpoison \
+            && mkdir --parents /tmp/.X11-unix \
+            && chmod 1777 /tmp/.X11-unix \
+            && Xvfb -help \
+            && ratpoison --version'''
+    }
 }
 
 def checkout(ConfigBuilder configBuilder) {
