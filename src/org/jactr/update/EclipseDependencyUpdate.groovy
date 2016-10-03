@@ -29,7 +29,8 @@ public class EclipseDependencyUpdate /* extends AbstractDependencyUpdate */ impl
     }
     
     public EclipseDependencyUpdate(String pathToManifestMf, String pathToFeatureXml) {
-        this(pathToManifestMf)
+        this.modifiedFilesPattern = pathToManifestMf+' '+pathToFeatureXml
+        this.pathToManifestMf = pathToManifestMf
         this.pathToFeatureXml = pathToFeatureXml
     }
 
@@ -52,7 +53,7 @@ public class EclipseDependencyUpdate /* extends AbstractDependencyUpdate */ impl
                          --in-place \
                          --regexp-extended \
                            \'s/<import plugin="('''+dependencyMavenGroupId+'''[^;]*)" version="[^"]*"/<import plugin="\\1" version="'''+newVersion+'''"/g\' \
-                         '''+pathToManifestMf
+                         '''+pathToFeatureXml
         }
     }
 
