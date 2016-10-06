@@ -65,8 +65,8 @@ def run(ConfigBuilder configBuilder) {
                    } else {
                        gitCommands(config, 
                             """git branch -f release \
-                            && git branch --delete dependencies \
-                            && git checkout release""")
+                            && git checkout release \
+                            && git branch --delete dependencies""")
                    }
                }
     		   
