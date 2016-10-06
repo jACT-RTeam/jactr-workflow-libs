@@ -62,6 +62,11 @@ def run(ConfigBuilder configBuilder) {
                             && git push \
                             && git branch --delete dependencies \
                             && git checkout release""")
+                   } else {
+                       gitCommands(config, 
+                            """git branch -f release \
+                            && git branch --delete dependencies \
+                            && git checkout release""")
                    }
                }
     		   
@@ -185,7 +190,7 @@ def checkout(ConfigBuilder configBuilder) {
 def pushNewVersionNumberToGit(Config config, String patternOfFilesContainingTheVersionNumber, String newVersion) {
     gitCommands(config,
         """git add """+patternOfFilesContainingTheVersionNumber+""" \
-           && git commit -m 'Release version"""+newVersion+"""' \
+           && git commit -m 'Release version """+newVersion+"""' \
            && git checkout master \
            && git merge --commit --no-edit release \
            && git pull --commit --no-edit \
