@@ -51,8 +51,17 @@ def run(ConfigBuilder configBuilder) {
                             config.script.newDependencyVersion)
                             
                         // Push the change
-                        gitPush(config, config.dependencyUpdate.modifiedFilesPattern,
-                            'Update dependency '+dependencyToUpdateForMaven+' to '+config.script.newDependencyVersion+' in '+config.dependencyUpdate.modifiedFilesPattern)
+                        gitCommands(config, 
+                            """git add """+config.dependencyUpdate.modifiedFilesPattern+""" \
+                            && git commit -m 'Update dependency """+dependencyToUpdateForMaven+""" to """+config.script.newDependencyVersion+""" in """+config.dependencyUpdate.modifiedFilesPattern+"""' \
+                            && export DEPENDENCIES_UPDATE_COMMIT_HASH=$(git log --oneline --max-count=1 | cut --delimiter=" " --fields=1) \
+                            && git branch -f release $DEPENDENCIES_UPDATE_COMMIT_HASH \
+                            && git checkout master \
+                            && git merge --commit --no-edit dependencies \
+                            && git pull --commit --no-edit \
+                            && git push \
+                            && git branch --delete dependencies \
+                            && git checkout release""")
                    }
                }
     		   
@@ -169,17 +178,22 @@ def checkout(ConfigBuilder configBuilder) {
                 ? [[url: configBuilder.gitRepoURL, credentialsId: configBuilder.gitCredentialsId]]
                 : [[url: configBuilder.gitRepoURL]]
             ])
-    sh '''git branch -f temp \
-          && git checkout master \
-          && git merge --commit --no-edit temp \
-          && git branch -d temp'''
+    sh '''git branch -f dependencies \
+          && git checkout dependencies'''
 }
 
 def pushNewVersionNumberToGit(Config config, String patternOfFilesContainingTheVersionNumber, String newVersion) {
-    gitPush(config, patternOfFilesContainingTheVersionNumber, 'Release version '+newVersion)
+    gitCommands(config,
+        """git add """+patternOfFilesContainingTheVersionNumber+""" \
+           && git commit -m 'Release version"""+newVersion+"""' \
+           && git checkout master \
+           && git merge --commit --no-edit release \
+           && git pull --commit --no-edit \
+           && git push \
+           && git branch --delete release""")
 }
 
-private void gitPush(Config config, String patternOfFilesToAdd, String commitMessage) {
+private void gitCommands(Config config, String gitCommands) {
     // See git man page for the git store credential for information on the file format.
     // https://git-scm.com/docs/git-credential-store
     withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: config.gitCredentialsId, usernameVariable: 'GIT_REPO_USER', passwordVariable: 'GIT_REPO_PASSWORD'],
@@ -190,9 +204,7 @@ private void gitPush(Config config, String patternOfFilesToAdd, String commitMes
                 && git config --local credential.username '"""+env.GIT_REPO_USER+"""' \
                 && git config --local credential.helper 'store --file="""+env.GIT_CREDENTIALS_FILE+"""' \
                 && git config --local push.default 'matching' \
-                && git add """+patternOfFilesToAdd+""" \
-                && git commit -m '"""+commitMessage+"""' \
-                && git push"""
+                && """+gitCommands
         } finally {
             sh """git config --local --remove-section user; \
                 git config --local --remove-section credential; \
