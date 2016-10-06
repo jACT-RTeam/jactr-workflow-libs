@@ -173,7 +173,7 @@ def checkout(ConfigBuilder configBuilder) {
     // to be able to exclude Jenkins jobs from triggering themselves. This leaves the Git repository in detached head
     // state which needs to be overcome using git checkout master before proceeding.
     checkout([$class: 'GitSCM',
-        branches: [[name: 'refs/heads/master']],
+        branches: [[name: 'refs/remoted/origin/master']],
         doGenerateSubmoduleConfigurations: false,
         extensions: [[$class: 'UserExclusion', excludedUsers: 'Jenkins Monochromata']],
         gitTool: 'Default',
