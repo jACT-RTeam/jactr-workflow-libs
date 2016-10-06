@@ -54,8 +54,8 @@ def run(ConfigBuilder configBuilder) {
                         gitCommands(config, 
                             """git add """+config.dependencyUpdate.modifiedFilesPattern+""" \
                             && git commit -m 'Update dependency """+dependencyToUpdateForMaven+""" to """+config.script.newDependencyVersion+""" in """+config.dependencyUpdate.modifiedFilesPattern+"""' \
-                            && export DEPENDENCIES_UPDATE_COMMIT_HASH=$(git log --oneline --max-count=1 | cut --delimiter=" " --fields=1) \
-                            && git branch -f release $DEPENDENCIES_UPDATE_COMMIT_HASH \
+                            && export DEPENDENCIES_UPDATE_COMMIT_HASH=\$(git log --oneline --max-count=1 | cut --delimiter=" " --fields=1) \
+                            && git branch -f release \$DEPENDENCIES_UPDATE_COMMIT_HASH \
                             && git checkout master \
                             && git merge --commit --no-edit dependencies \
                             && git pull --commit --no-edit \
