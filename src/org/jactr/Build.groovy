@@ -57,8 +57,8 @@ def run(ConfigBuilder configBuilder) {
                             && export DEPENDENCIES_UPDATE_COMMIT_HASH=\$(git log --oneline --max-count=1 | cut --delimiter=" " --fields=1) \
                             && git branch -f release \$DEPENDENCIES_UPDATE_COMMIT_HASH \
                             && git checkout master \
-                            && git merge --commit --no-edit dependencies \
                             && git pull --commit --no-edit \
+                            && git merge --commit --no-edit dependencies \
                             && git push \
                             && git branch --delete dependencies \
                             && git checkout release""")
@@ -192,8 +192,8 @@ def pushNewVersionNumberToGit(Config config, String patternOfFilesContainingTheV
         """git add """+patternOfFilesContainingTheVersionNumber+""" \
            && git commit -m 'Release version """+newVersion+"""' \
            && git checkout master \
-           && git merge --commit --no-edit release \
            && git pull --commit --no-edit \
+           && git merge --commit --no-edit release \
            && git push \
            && git branch --delete release""")
 }
