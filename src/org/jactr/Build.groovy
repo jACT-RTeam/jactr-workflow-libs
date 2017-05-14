@@ -156,7 +156,7 @@ def installToolsIfNecessary() {
         sh '''echo "deb http://http.debian.net/debian jessie-backports main" > /etc/apt/sources.list.d/jessie-backports.list \
             && apt-get update \
             && apt-get remove --yes openjdk-7-jdk \
-            && apt-get upgrade --yes -t jessie-backports ca-certificates-java
+            && apt-get upgrade --yes -t jessie-backports ca-certificates-java \
             && apt-get install --yes openjdk-8-jre-headless openjdk-8-jdk \
             && /usr/sbin/update-java-alternatives -s java-1.8.0-openjdk-amd64 \
             && apt-get install --yes curl git maven libxml-xpath-perl \
