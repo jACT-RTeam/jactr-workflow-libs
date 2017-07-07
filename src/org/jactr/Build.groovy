@@ -4,15 +4,13 @@ package org.jactr;
 // the contained methods to access standard pipeline step functions, see
 // https://github.com/jenkinsci/workflow-cps-global-lib-plugin/blob/master/README.md#writing-shared-code
 
-def run(ConfigBuilder configBuilder) {
-    // The milestone step, together with lock(..., inversePrecedence: true) below cancels all but the youngest build
-    // if more than one build is waiting to be started in front of this milestone/lock combination (the currently
-    // running build within the milestone, that has the lock, will run to completion, though). 
+def run(ConfigBuilder configBuilder) { 
     milestone 1
     // Ensure that the build does not run in parallel as it modifies the dependencies declarations and version numbers
     // e.g. in pom.xml files. If two builds ran in parallel, they would introduce merge conflicts. Note that merge
     // conflicts may still occur if the Git repository is updated while a build is running.
-    lock(resource: env.JOB_NAME+'-build', inversePrecedence: true) {
+    // inversePrecedence: true is not used here because that would skip some dependency updates
+    lock(resource: env.JOB_NAME+'-build') {
     	node(configBuilder.labelForJenkinsNode) {
     	   withCredentials([[$class: 'FileBinding', credentialsId: 'settings.xml', variable: 'PATH_TO_SETTINGS_XML'],
     	   					[$class: 'FileBinding', credentialsId: 'jarsigner.keystore', variable: 'PATH_TO_JARSIGNER_KEYSTORE'],
