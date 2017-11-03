@@ -121,21 +121,8 @@ def run(ConfigBuilder configBuilder) {
         	       				 -DskipITs=true \
         	       				 deploy''')
         	       }
+                   pushNewVersionNumberToGit(config, "*", newVersion)
     	       }
-    	       
-    	       /* Site deployment is disabled because domainfactory does not support SSH anymore.  
-    	       stage('Site deploy') {
-        	       // Retry is necessary because upload is unreliable
-        	       retry(5) {
-        	       		maven('''-DnewVersion='''+newVersion+''' \
-             					 -D'''+config.propertyForEclipseVersion+'''='''+newVersion+''' \
-        	       				 -DskipTests=true \
-        	       				 -DskipITs=true \
-        	       				 site-deploy''')
-        	     	}
-        	     	pushNewVersionNumberToGit(config, "*", newVersion)
-    	     	}
-    	     	*/
     	     	
     	     	stage('Trigger dependent jobs') {
         	     	for(String jobToTrigger in config.jobsToTrigger) {
