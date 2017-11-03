@@ -122,7 +122,8 @@ def run(ConfigBuilder configBuilder) {
         	       				 deploy''')
         	       }
     	       }
-    	             
+    	       
+    	       /* Site deployment is disabled because domainfactory does not support SSH anymore.  
     	       stage('Site deploy') {
         	       // Retry is necessary because upload is unreliable
         	       retry(5) {
@@ -134,6 +135,7 @@ def run(ConfigBuilder configBuilder) {
         	     	}
         	     	pushNewVersionNumberToGit(config, "*", newVersion)
     	     	}
+    	     	*/
     	     	
     	     	stage('Trigger dependent jobs') {
         	     	for(String jobToTrigger in config.jobsToTrigger) {
